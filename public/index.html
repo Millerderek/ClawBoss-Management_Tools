@@ -12,164 +12,105 @@
   --surface: #0f0f0f;
   --border: #1a1a1a;
   --accent: #c8f135;
-  --accent-glow: rgba(200,241,53,0.15);
+  --accent-dim: #8aab1f;
   --text: #e0e0e0;
   --muted: #444;
   --warning: #f0a030;
   --danger: #e03030;
   --active: #00e5ff;
+  --good: #00e676;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'DM Mono', monospace; overflow: hidden; }
 
-html, body {
-  height: 100%;
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'DM Mono', monospace;
-  overflow: hidden;
-}
-
-/* Scanline effect */
 body::after {
   content: '';
   position: fixed;
   inset: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0,0,0,0.03) 2px,
-    rgba(0,0,0,0.03) 4px
-  );
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
   pointer-events: none;
   z-index: 100;
 }
 
-/* Grid */
 body::before {
   content: '';
   position: fixed;
   inset: 0;
-  background-image:
-    linear-gradient(rgba(200,241,53,0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(200,241,53,0.02) 1px, transparent 1px);
+  background-image: linear-gradient(rgba(200,241,53,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(200,241,53,0.02) 1px, transparent 1px);
   background-size: 32px 32px;
   pointer-events: none;
 }
 
-.app {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  z-index: 1;
-}
+.app { height: 100vh; display: flex; flex-direction: column; position: relative; z-index: 1; }
 
 /* Header */
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 28px;
+  padding: 16px 24px;
   border-bottom: 1px solid var(--border);
 }
 
-.logo {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 28px;
-  letter-spacing: 0.1em;
-  color: var(--accent);
-  line-height: 1;
-}
+.logo { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 0.1em; color: var(--accent); line-height: 1; }
+.logo span { color: var(--muted); font-size: 10px; font-family: 'DM Mono', monospace; letter-spacing: 0.2em; display: block; margin-top: 2px; }
 
-.logo span {
-  color: var(--muted);
-  font-size: 12px;
-  font-family: 'DM Mono', monospace;
-  letter-spacing: 0.2em;
-  display: block;
-  margin-top: 2px;
-}
+.header-right { display: flex; align-items: center; gap: 16px; }
 
-.status-bar {
+/* Connection strength */
+.conn-strength {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 11px;
-  color: var(--muted);
-  letter-spacing: 0.1em;
+  align-items: flex-end;
+  gap: 2px;
+  height: 16px;
 }
 
-.status-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--muted);
-  transition: all 0.3s;
+.conn-bar {
+  width: 4px;
+  background: var(--border);
+  border-radius: 1px;
+  transition: background 0.3s;
 }
 
+.conn-bar:nth-child(1) { height: 4px; }
+.conn-bar:nth-child(2) { height: 8px; }
+.conn-bar:nth-child(3) { height: 12px; }
+.conn-bar:nth-child(4) { height: 16px; }
+
+.conn-strength.excellent .conn-bar { background: var(--good); }
+.conn-strength.good .conn-bar:nth-child(-n+3) { background: var(--good); }
+.conn-strength.fair .conn-bar:nth-child(-n+2) { background: var(--warning); }
+.conn-strength.poor .conn-bar:nth-child(1) { background: var(--danger); }
+.conn-strength.disconnected .conn-bar { background: var(--border); }
+
+.conn-label { font-size: 9px; letter-spacing: 0.1em; color: var(--muted); margin-left: 6px; text-transform: uppercase; }
+
+/* Status */
+.status-bar { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--muted); letter-spacing: 0.1em; }
+.status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); transition: all 0.3s; }
 .status-dot.connected { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
 .status-dot.listening { background: var(--active); box-shadow: 0 0 8px var(--active); animation: pulse 1s infinite; }
 .status-dot.speaking { background: var(--warning); box-shadow: 0 0 8px var(--warning); animation: pulse 0.5s infinite; }
 
-@keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(0.8); }
-}
+@keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(0.8); } }
 
-/* Main content */
-.main {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 28px;
-  overflow: hidden;
-}
+/* Main */
+.main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 24px; overflow: hidden; }
 
 /* SELECT VIEW */
-.select-view {
-  width: 100%;
-  max-width: 600px;
-  animation: fadeIn 0.4s ease;
-}
+.select-view { width: 100%; max-width: 600px; animation: fadeIn 0.4s ease; }
+.select-title { font-family: 'Bebas Neue', sans-serif; font-size: 44px; letter-spacing: 0.05em; color: var(--text); margin-bottom: 6px; line-height: 1; }
+.select-sub { font-size: 10px; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 28px; }
 
-.select-title {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 48px;
-  letter-spacing: 0.05em;
-  color: var(--text);
-  margin-bottom: 8px;
-  line-height: 1;
-}
-
-.select-sub {
-  font-size: 11px;
-  color: var(--muted);
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  margin-bottom: 32px;
-}
-
-.session-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.session-grid-bottom {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
+.session-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+.session-grid-bottom { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
 .session-btn {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 2px;
-  padding: 20px 16px;
+  padding: 18px 14px;
   cursor: pointer;
   transition: all 0.2s;
   text-align: left;
@@ -177,106 +118,66 @@ body::before {
   overflow: hidden;
 }
 
-.session-btn::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: var(--accent);
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-
-.session-btn:hover {
-  border-color: var(--accent);
-  transform: translateY(-2px);
-}
-
+.session-btn::before { content: ''; position: absolute; inset: 0; background: var(--accent); opacity: 0; transition: opacity 0.2s; }
+.session-btn:hover { border-color: var(--accent); transform: translateY(-2px); }
 .session-btn:hover::before { opacity: 0.04; }
-
 .session-btn:active { transform: translateY(0); }
+.session-btn.consent-required { border-color: rgba(240,160,48,0.2); }
+.session-btn.consent-required:hover { border-color: var(--warning); }
+.session-btn.consent-required::before { background: var(--warning); }
 
-.session-btn.consent-required {
-  border-color: rgba(240,160,48,0.2);
-}
-
-.session-btn.consent-required:hover {
-  border-color: var(--warning);
-}
-
-.session-btn.consent-required::before {
-  background: var(--warning);
-}
-
-.btn-icon {
-  font-size: 24px;
-  margin-bottom: 10px;
-  display: block;
-  position: relative;
-  z-index: 1;
-}
-
-.btn-name {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 18px;
-  letter-spacing: 0.08em;
-  color: var(--text);
-  display: block;
-  margin-bottom: 4px;
-  position: relative;
-  z-index: 1;
-}
-
-.btn-desc {
-  font-size: 10px;
-  color: var(--muted);
-  line-height: 1.5;
-  display: block;
-  position: relative;
-  z-index: 1;
-}
-
-.btn-tag {
-  display: inline-block;
-  font-size: 9px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  padding: 2px 6px;
-  border-radius: 1px;
-  margin-top: 8px;
-  position: relative;
-  z-index: 1;
-}
-
+.btn-icon { font-size: 22px; margin-bottom: 8px; display: block; position: relative; z-index: 1; }
+.btn-name { font-family: 'Bebas Neue', sans-serif; font-size: 17px; letter-spacing: 0.08em; color: var(--text); display: block; margin-bottom: 3px; position: relative; z-index: 1; }
+.btn-desc { font-size: 9px; color: var(--muted); line-height: 1.5; display: block; position: relative; z-index: 1; }
+.btn-tag { display: inline-block; font-size: 8px; letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 5px; border-radius: 1px; margin-top: 6px; position: relative; z-index: 1; }
 .tag-free { background: rgba(200,241,53,0.1); color: var(--accent); }
 .tag-consent { background: rgba(240,160,48,0.1); color: var(--warning); }
 
 /* SESSION VIEW */
-.session-view {
-  display: none;
-  width: 100%;
-  max-width: 480px;
-  text-align: center;
-  animation: fadeIn 0.4s ease;
-}
-
+.session-view { display: none; width: 100%; max-width: 520px; animation: fadeIn 0.4s ease; }
 .session-view.active { display: block; }
 
-.session-mode-label {
-  font-size: 10px;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 8px;
+.session-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+.session-mode-label { font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--muted); }
+.session-mode-name { font-family: 'Bebas Neue', sans-serif; font-size: 40px; letter-spacing: 0.05em; color: var(--accent); line-height: 1; }
+
+/* Stats row */
+.stats-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 24px;
 }
 
-.session-mode-name {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 56px;
-  letter-spacing: 0.05em;
-  color: var(--accent);
-  margin-bottom: 32px;
-  line-height: 1;
+.stat-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 10px 12px;
 }
+
+.stat-label { font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; display: block; }
+.stat-value { font-size: 11px; color: var(--text); }
+
+/* Mic meter */
+.mic-meter {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 20px;
+}
+
+.mic-bar {
+  flex: 1;
+  background: var(--border);
+  border-radius: 1px;
+  transition: height 0.05s ease, background 0.2s;
+  min-height: 2px;
+}
+
+.mic-bar.low { background: var(--accent); }
+.mic-bar.mid { background: var(--warning); }
+.mic-bar.high { background: var(--danger); }
 
 /* Visualizer */
 .visualizer {
@@ -284,122 +185,96 @@ body::before {
   align-items: flex-end;
   justify-content: center;
   gap: 3px;
-  height: 64px;
-  margin-bottom: 32px;
+  height: 56px;
+  margin-bottom: 20px;
+  padding: 0 8px;
 }
 
-.bar {
-  width: 4px;
-  background: var(--border);
-  border-radius: 2px;
-  transition: height 0.1s ease, background 0.3s;
-  min-height: 4px;
-}
-
+.bar { width: 4px; background: var(--border); border-radius: 2px; transition: height 0.1s ease, background 0.3s; min-height: 3px; }
 .bar.active { background: var(--accent); }
 .bar.agent { background: var(--warning); }
 
 /* State label */
-.state-label {
-  font-size: 12px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 40px;
-  min-height: 16px;
-  transition: color 0.3s;
-}
-
+.state-label { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 24px; text-align: center; min-height: 16px; transition: color 0.3s; }
 .state-label.listening { color: var(--active); }
 .state-label.speaking { color: var(--warning); }
 .state-label.thinking { color: var(--accent); }
 
-/* End button */
+/* Controls */
+.controls { display: flex; align-items: center; justify-content: center; gap: 12px; }
+
+.ctrl-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 8px 16px;
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ctrl-btn:hover { border-color: var(--text); color: var(--text); }
+.ctrl-btn.muted { border-color: var(--danger); color: var(--danger); }
+.ctrl-btn.muted:hover { background: rgba(224,48,48,0.1); }
+
 .end-btn {
   background: transparent;
   border: 1px solid var(--danger);
   border-radius: 2px;
-  padding: 10px 24px;
+  padding: 8px 20px;
   color: var(--danger);
   font-family: 'DM Mono', monospace;
-  font-size: 11px;
+  font-size: 10px;
   letter-spacing: 0.15em;
   text-transform: uppercase;
   cursor: pointer;
   transition: all 0.2s;
 }
 
-.end-btn:hover {
-  background: rgba(224,48,48,0.1);
-}
+.end-btn:hover { background: rgba(224,48,48,0.1); }
 
-/* Connecting view */
-.connecting-view {
-  display: none;
-  text-align: center;
-  animation: fadeIn 0.3s ease;
-}
-
+/* Connecting */
+.connecting-view { display: none; text-align: center; animation: fadeIn 0.3s ease; }
 .connecting-view.active { display: block; }
-
-.connecting-text {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 32px;
-  letter-spacing: 0.1em;
-  color: var(--muted);
-  margin-bottom: 16px;
-}
-
-.connecting-dots {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-}
-
-.dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--accent);
-  animation: dotPulse 1.2s ease infinite;
-}
-
+.connecting-text { font-family: 'Bebas Neue', sans-serif; font-size: 32px; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 16px; }
+.connecting-dots { display: flex; justify-content: center; gap: 8px; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: dotPulse 1.2s ease infinite; }
 .dot:nth-child(2) { animation-delay: 0.2s; }
 .dot:nth-child(3) { animation-delay: 0.4s; }
-
-@keyframes dotPulse {
-  0%, 100% { opacity: 0.2; transform: scale(0.8); }
-  50% { opacity: 1; transform: scale(1); }
-}
+@keyframes dotPulse { 0%, 100% { opacity: 0.2; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1); } }
 
 /* Footer */
 .footer {
-  padding: 12px 28px;
+  padding: 10px 24px;
   border-top: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 10px;
+  font-size: 9px;
   color: var(--muted);
   letter-spacing: 0.1em;
 }
 
-.footer-mode {
-  color: var(--accent);
-  text-transform: uppercase;
-}
+.footer-mode { color: var(--accent); text-transform: uppercase; }
 
-/* Error toast */
+/* Toast */
 .toast {
   position: fixed;
-  bottom: 60px;
+  bottom: 52px;
   left: 50%;
   transform: translateX(-50%) translateY(20px);
   background: #1a0000;
   border: 1px solid var(--danger);
   border-radius: 2px;
-  padding: 10px 20px;
-  font-size: 11px;
+  padding: 8px 16px;
+  font-size: 10px;
   color: var(--danger);
   opacity: 0;
   transition: all 0.3s;
@@ -407,111 +282,65 @@ body::before {
   white-space: nowrap;
 }
 
-.toast.visible {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+.toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.info { background: #0a1a00; border-color: var(--accent); color: var(--accent); }
 
 /* Config panel */
-.config-toggle {
-  background: none;
-  border: none;
-  color: var(--muted);
-  font-family: 'DM Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  cursor: pointer;
-  padding: 4px 8px;
-  transition: color 0.2s;
-}
-
+.config-toggle { background: none; border: none; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.1em; cursor: pointer; padding: 3px 6px; transition: color 0.2s; }
 .config-toggle:hover { color: var(--text); }
 
 .config-panel {
   display: none;
   position: fixed;
-  bottom: 48px;
-  right: 28px;
+  bottom: 44px;
+  right: 24px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 2px;
-  padding: 16px;
-  width: 280px;
+  padding: 14px;
+  width: 260px;
   z-index: 150;
   animation: fadeIn 0.2s ease;
 }
 
 .config-panel.open { display: block; }
-
-.config-row {
-  margin-bottom: 12px;
-}
-
-.config-label {
-  font-size: 9px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 6px;
-  display: block;
-}
-
-.config-input {
-  width: 100%;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 2px;
-  padding: 8px 10px;
-  font-family: 'DM Mono', monospace;
-  font-size: 11px;
-  color: var(--text);
-  outline: none;
-}
-
+.config-row { margin-bottom: 10px; }
+.config-label { font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; display: block; }
+.config-input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 2px; padding: 7px 9px; font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text); outline: none; }
 .config-input:focus { border-color: var(--accent); }
+.config-save { width: 100%; padding: 7px; background: var(--accent); color: #080808; border: none; border-radius: 2px; font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; font-weight: 500; }
 
-.config-save {
-  width: 100%;
-  padding: 8px;
-  background: var(--accent);
-  color: #080808;
-  border: none;
-  border-radius: 2px;
-  font-family: 'DM Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  cursor: pointer;
-  font-weight: 500;
-}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 </style>
 </head>
 <body>
-
 <div class="app">
   <div class="header">
-    <div class="logo">
-      ClawBoss
-      <span>Voice Session Manager</span>
-    </div>
-    <div class="status-bar">
-      <div class="status-dot" id="statusDot"></div>
-      <span id="statusText">STANDBY</span>
+    <div class="logo">ClawBoss <span>Voice Session Manager</span></div>
+    <div class="header-right">
+      <!-- Connection strength -->
+      <div style="display:flex;align-items:center;gap:4px" id="connStrengthWrap">
+        <div class="conn-strength disconnected" id="connStrength">
+          <div class="conn-bar"></div>
+          <div class="conn-bar"></div>
+          <div class="conn-bar"></div>
+          <div class="conn-bar"></div>
+        </div>
+        <span class="conn-label" id="connLabel">—</span>
+      </div>
+      <div class="status-bar">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusText">STANDBY</span>
+      </div>
     </div>
   </div>
 
   <div class="main">
 
-    <!-- SELECT SESSION TYPE -->
+    <!-- SELECT -->
     <div class="select-view" id="selectView">
       <div class="select-title">Start Session</div>
-      <div class="select-sub">Select a session type to begin — no sign-in required</div>
-
+      <div class="select-sub">Select session type — no sign-in required</div>
       <div class="session-grid">
         <button class="session-btn" onclick="startSession('braindump')">
           <span class="btn-icon">🧠</span>
@@ -528,7 +357,7 @@ body::before {
         <button class="session-btn consent-required" onclick="startSession('1on1')">
           <span class="btn-icon">👥</span>
           <span class="btn-name">1:1 Meeting</span>
-          <span class="btn-desc">Two-party session with disclosure</span>
+          <span class="btn-desc">Two-party with disclosure</span>
           <span class="btn-tag tag-consent">Consent Required</span>
         </button>
       </div>
@@ -551,29 +380,66 @@ body::before {
     <!-- CONNECTING -->
     <div class="connecting-view" id="connectingView">
       <div class="connecting-text">Connecting</div>
-      <div class="connecting-dots">
-        <div class="dot"></div>
-        <div class="dot"></div>
-        <div class="dot"></div>
-      </div>
+      <div class="connecting-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
     </div>
 
-    <!-- ACTIVE SESSION -->
+    <!-- SESSION -->
     <div class="session-view" id="sessionView">
-      <div class="session-mode-label">Active Session</div>
-      <div class="session-mode-name" id="sessionModeName">—</div>
+      <div class="session-header">
+        <div>
+          <div class="session-mode-label">Active Session</div>
+          <div class="session-mode-name" id="sessionModeName">—</div>
+        </div>
+        <div style="text-align:right">
+          <div class="session-mode-label" id="sessionTimer">00:00</div>
+          <div style="font-size:9px;color:var(--muted);margin-top:4px" id="sessionRoom">—</div>
+        </div>
+      </div>
 
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-box">
+          <span class="stat-label">Mic Level</span>
+          <div class="mic-meter" id="micMeter">
+            <div class="mic-bar"></div><div class="mic-bar"></div><div class="mic-bar"></div>
+            <div class="mic-bar"></div><div class="mic-bar"></div><div class="mic-bar"></div>
+            <div class="mic-bar"></div><div class="mic-bar"></div>
+          </div>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">Connection</span>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:2px">
+            <div class="conn-strength disconnected" id="connStrength2">
+              <div class="conn-bar"></div><div class="conn-bar"></div>
+              <div class="conn-bar"></div><div class="conn-bar"></div>
+            </div>
+            <span style="font-size:10px;color:var(--text)" id="connLabel2">—</span>
+          </div>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">Participants</span>
+          <span class="stat-value" id="participantCount">—</span>
+        </div>
+      </div>
+
+      <!-- Visualizer -->
       <div class="visualizer" id="visualizer"></div>
 
       <div class="state-label" id="stateLabel">Initializing...</div>
 
-      <button class="end-btn" onclick="endSession()">End Session</button>
+      <div class="controls">
+        <button class="ctrl-btn" id="muteBtn" onclick="toggleMute()">
+          <span id="muteIcon">🎤</span>
+          <span id="muteLabel">Mute</span>
+        </button>
+        <button class="end-btn" onclick="endSession()">End Session</button>
+      </div>
     </div>
 
   </div>
 
   <div class="footer">
-    <span>ClawBoss v1.0 · <span class="footer-mode" id="footerMode">—</span></span>
+    <span>ClawBoss v1.1 · <span class="footer-mode" id="footerMode">—</span></span>
     <button class="config-toggle" onclick="toggleConfig()">⚙ Config</button>
   </div>
 </div>
@@ -582,15 +448,15 @@ body::before {
 <div class="config-panel" id="configPanel">
   <div class="config-row">
     <label class="config-label">Token Server URL</label>
-    <input class="config-input" id="cfgTokenServer" type="text" placeholder="http://localhost:8090">
+    <input class="config-input" id="cfgTokenServer" type="text" placeholder="https://clawboss.lutherbot.com">
   </div>
   <div class="config-row">
     <label class="config-label">LiveKit WSS URL</label>
-    <input class="config-input" id="cfgLiveKitUrl" type="text" placeholder="wss://your-livekit-server">
+    <input class="config-input" id="cfgLiveKitUrl" type="text" placeholder="wss://livekit.lutherbot.com">
   </div>
   <div class="config-row">
     <label class="config-label">Room Name</label>
-    <input class="config-input" id="cfgRoom" type="text" placeholder="clawboss" value="clawboss">
+    <input class="config-input" id="cfgRoom" type="text" placeholder="clawboss">
   </div>
   <button class="config-save" onclick="saveConfig()">Save Config</button>
 </div>
@@ -599,31 +465,20 @@ body::before {
 
 <script>
 // ── Config ──────────────────────────────────────────────────────────────────
-const DEFAULTS = {
-  tokenServer: window.location.origin,
-  livekitUrl: '',
-  room: 'clawboss'
-};
-
 function loadConfig() {
   return {
-    tokenServer: localStorage.getItem('cb_token_server') || DEFAULTS.tokenServer,
-    livekitUrl: localStorage.getItem('cb_livekit_url') || DEFAULTS.livekitUrl,
-    room: localStorage.getItem('cb_room') || DEFAULTS.room
+    tokenServer: localStorage.getItem('cb_token_server') || window.location.origin,
+    livekitUrl: localStorage.getItem('cb_livekit_url') || '',
+    room: localStorage.getItem('cb_room') || 'clawboss'
   };
 }
 
 function saveConfig() {
-  const cfg = {
-    tokenServer: document.getElementById('cfgTokenServer').value.trim(),
-    livekitUrl: document.getElementById('cfgLiveKitUrl').value.trim(),
-    room: document.getElementById('cfgRoom').value.trim() || 'clawboss'
-  };
-  localStorage.setItem('cb_token_server', cfg.tokenServer);
-  localStorage.setItem('cb_livekit_url', cfg.livekitUrl);
-  localStorage.setItem('cb_room', cfg.room);
+  localStorage.setItem('cb_token_server', document.getElementById('cfgTokenServer').value.trim());
+  localStorage.setItem('cb_livekit_url', document.getElementById('cfgLiveKitUrl').value.trim());
+  localStorage.setItem('cb_room', document.getElementById('cfgRoom').value.trim() || 'clawboss');
   toggleConfig();
-  showToast('Config saved');
+  showToast('Config saved', 'info');
 }
 
 function toggleConfig() {
@@ -639,51 +494,115 @@ function toggleConfig() {
 let room = null;
 let currentMode = null;
 let animFrame = null;
-const bars = [];
+let micAnimFrame = null;
+let sessionStart = null;
+let timerInterval = null;
+let isMuted = false;
+let audioContext = null;
+let analyser = null;
+let micSource = null;
+const vizBars = [];
 
 // ── Visualizer ───────────────────────────────────────────────────────────────
 function initVisualizer() {
   const viz = document.getElementById('visualizer');
   viz.innerHTML = '';
-  bars.length = 0;
-  for (let i = 0; i < 32; i++) {
+  vizBars.length = 0;
+  for (let i = 0; i < 36; i++) {
     const bar = document.createElement('div');
     bar.className = 'bar';
     viz.appendChild(bar);
-    bars.push(bar);
+    vizBars.push(bar);
   }
 }
 
-function animateBars(type, intensity) {
-  bars.forEach((bar, i) => {
+function animateViz(type, intensity) {
+  vizBars.forEach((bar, i) => {
     const wave = Math.sin(Date.now() * 0.005 + i * 0.4) * 0.5 + 0.5;
     const rand = Math.random() * 0.3;
-    const h = type === 'idle' ? 4 : Math.max(4, (wave + rand) * intensity);
+    const h = type === 'idle' ? 3 : Math.max(3, (wave + rand) * intensity);
     bar.style.height = h + 'px';
     bar.className = 'bar ' + (type !== 'idle' ? type : '');
   });
 }
 
-function startAnimation(type, intensity = 40) {
+function startVizAnim(type, intensity = 40) {
   if (animFrame) cancelAnimationFrame(animFrame);
-  function frame() {
-    animateBars(type, intensity);
-    animFrame = requestAnimationFrame(frame);
-  }
+  function frame() { animateViz(type, intensity); animFrame = requestAnimationFrame(frame); }
   frame();
 }
 
-function stopAnimation() {
+function stopViz() {
   if (animFrame) cancelAnimationFrame(animFrame);
-  bars.forEach(b => { b.style.height = '4px'; b.className = 'bar'; });
+  vizBars.forEach(b => { b.style.height = '3px'; b.className = 'bar'; });
 }
 
-// ── UI helpers ────────────────────────────────────────────────────────────────
+// ── Mic Level Meter ──────────────────────────────────────────────────────────
+function startMicMeter() {
+  const micBars = document.querySelectorAll('.mic-bar');
+  function updateMeter() {
+    let level = 0;
+    if (room && room.localParticipant) {
+      const audioLevel = room.localParticipant.audioLevel || 0;
+      level = audioLevel;
+    }
+    micBars.forEach((bar, i) => {
+      const threshold = (i + 1) / micBars.length;
+      bar.style.height = level > threshold ? '100%' : '15%';
+      bar.className = 'mic-bar' + (level > 0.7 ? ' high' : level > 0.4 ? ' mid' : level > 0.05 ? ' low' : '');
+    });
+    micAnimFrame = requestAnimationFrame(updateMeter);
+  }
+  updateMeter();
+}
+
+function stopMicMeter() {
+  if (micAnimFrame) cancelAnimationFrame(micAnimFrame);
+  if (audioContext) { audioContext.close(); audioContext = null; }
+}
+
+// ── Connection Strength ──────────────────────────────────────────────────────
+function updateConnStrength(quality) {
+  const ids = ['connStrength', 'connStrength2'];
+  const labelIds = ['connLabel', 'connLabel2'];
+  const map = {
+    excellent: { cls: 'excellent', label: 'Excellent' },
+    good: { cls: 'good', label: 'Good' },
+    fair: { cls: 'fair', label: 'Fair' },
+    poor: { cls: 'poor', label: 'Poor' },
+    disconnected: { cls: 'disconnected', label: '—' },
+  };
+  const q = map[quality] || map.disconnected;
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.className = 'conn-strength ' + q.cls;
+  });
+  labelIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = q.label;
+  });
+}
+
+// ── Timer ────────────────────────────────────────────────────────────────────
+function startTimer() {
+  sessionStart = Date.now();
+  timerInterval = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - sessionStart) / 1000);
+    const m = String(Math.floor(elapsed / 60)).padStart(2, '0');
+    const s = String(elapsed % 60).padStart(2, '0');
+    document.getElementById('sessionTimer').textContent = m + ':' + s;
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(timerInterval);
+  document.getElementById('sessionTimer').textContent = '00:00';
+}
+
+// ── UI Helpers ────────────────────────────────────────────────────────────────
 function setStatus(state, text) {
-  const dot = document.getElementById('statusDot');
-  const label = document.getElementById('statusText');
-  dot.className = 'status-dot ' + state;
-  label.textContent = text;
+  document.getElementById('statusDot').className = 'status-dot ' + state;
+  document.getElementById('statusText').textContent = text;
 }
 
 function setState(state, text) {
@@ -698,25 +617,36 @@ function showView(name) {
   document.getElementById('sessionView').className = 'session-view' + (name === 'session' ? ' active' : '');
 }
 
-function showToast(msg, duration = 3000) {
+function showToast(msg, type = 'error', duration = 3000) {
   const t = document.getElementById('toast');
   t.textContent = msg;
-  t.classList.add('visible');
+  t.className = 'toast visible' + (type === 'info' ? ' info' : '');
   setTimeout(() => t.classList.remove('visible'), duration);
 }
 
-const MODE_NAMES = {
-  braindump: 'Brain Dump',
-  voicenote: 'Voice Note',
-  '1on1': '1:1 Meeting',
-  conference: 'Conference',
-  interview: 'Interview'
-};
+function updateParticipantCount() {
+  if (!room) return;
+  const count = [...room.remoteParticipants.values()].length + 1;
+  document.getElementById('participantCount').textContent = count + ' online';
+}
+
+const MODE_NAMES = { braindump: 'Brain Dump', voicenote: 'Voice Note', '1on1': '1:1 Meeting', conference: 'Conference', interview: 'Interview' };
+
+// ── Mute ─────────────────────────────────────────────────────────────────────
+async function toggleMute() {
+  if (!room) return;
+  isMuted = !isMuted;
+  await room.localParticipant.setMicrophoneEnabled(!isMuted);
+  const btn = document.getElementById('muteBtn');
+  document.getElementById('muteIcon').textContent = isMuted ? '🔇' : '🎤';
+  document.getElementById('muteLabel').textContent = isMuted ? 'Unmute' : 'Mute';
+  btn.classList.toggle('muted', isMuted);
+  showToast(isMuted ? 'Microphone muted' : 'Microphone active', 'info', 2000);
+}
 
 // ── Session ───────────────────────────────────────────────────────────────────
 async function startSession(mode) {
   const cfg = loadConfig();
-
   if (!cfg.livekitUrl) {
     showToast('Set LiveKit WSS URL in ⚙ Config first');
     toggleConfig();
@@ -724,55 +654,69 @@ async function startSession(mode) {
   }
 
   currentMode = mode;
+  isMuted = false;
   showView('connecting');
   setStatus('', 'Connecting...');
   initVisualizer();
-
   document.getElementById('sessionModeName').textContent = MODE_NAMES[mode] || mode;
   document.getElementById('footerMode').textContent = mode.toUpperCase();
+  document.getElementById('sessionRoom').textContent = cfg.room;
 
   try {
-    // Get token
     const identity = 'user-' + Math.random().toString(36).slice(2, 7);
-    const tokenRes = await fetch(
-      `${cfg.tokenServer}/token?room=${encodeURIComponent(cfg.room)}&identity=${encodeURIComponent(identity)}&mode=${encodeURIComponent(mode)}`
-    );
+    const tokenRes = await fetch(`${cfg.tokenServer}/token?room=${encodeURIComponent(cfg.room)}&identity=${encodeURIComponent(identity)}&mode=${encodeURIComponent(mode)}`);
     if (!tokenRes.ok) throw new Error(`Token server error: ${tokenRes.status}`);
     const { token } = await tokenRes.json();
 
-    // Connect to LiveKit
     room = new LivekitClient.Room({
-      audioCaptureDefaults: { echoCancellation: true, noiseSuppression: true }
+      audioCaptureDefaults: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
     });
 
     room.on(LivekitClient.RoomEvent.Connected, () => {
       showView('session');
       setStatus('connected', 'Connected');
       setState('listening', 'Waiting for agent...');
+      updateConnStrength('good');
+      startTimer();
+      startMicMeter();
+      updateParticipantCount();
     });
 
-    room.on(LivekitClient.RoomEvent.Disconnected, () => {
-      handleDisconnect();
+    room.on(LivekitClient.RoomEvent.Disconnected, () => handleDisconnect());
+
+    room.on(LivekitClient.RoomEvent.ConnectionQualityChanged, (quality, participant) => {
+      if (participant === room.localParticipant) {
+        const map = {
+          [LivekitClient.ConnectionQuality.Excellent]: 'excellent',
+          [LivekitClient.ConnectionQuality.Good]: 'good',
+          [LivekitClient.ConnectionQuality.Poor]: 'poor',
+          [LivekitClient.ConnectionQuality.Lost]: 'poor',
+          [LivekitClient.ConnectionQuality.Unknown]: 'fair',
+        };
+        updateConnStrength(map[quality] || 'fair');
+      }
     });
 
     room.on(LivekitClient.RoomEvent.ActiveSpeakersChanged, (speakers) => {
-      const isAgentSpeaking = speakers.some(s => s.identity !== identity);
+      const isAgentSpeaking = speakers.some(s => s.identity !== identity && s.identity.startsWith('agent'));
       const isUserSpeaking = speakers.some(s => s.identity === identity);
-
       if (isAgentSpeaking) {
         setState('speaking', 'ClawBoss speaking...');
         setStatus('speaking', 'Agent Speaking');
-        startAnimation('agent', 48);
+        startVizAnim('agent', 48);
       } else if (isUserSpeaking) {
         setState('listening', 'Listening...');
         setStatus('listening', 'Listening');
-        startAnimation('active', 40);
+        startVizAnim('active', 40);
       } else {
         setState('', 'Ready');
         setStatus('connected', 'Connected');
-        startAnimation('idle', 0);
+        stopViz();
       }
     });
+
+    room.on(LivekitClient.RoomEvent.ParticipantConnected, () => updateParticipantCount());
+    room.on(LivekitClient.RoomEvent.ParticipantDisconnected, () => updateParticipantCount());
 
     room.on(LivekitClient.RoomEvent.TrackSubscribed, (track, pub, participant) => {
       if (track.kind === LivekitClient.Track.Kind.Audio) {
@@ -790,39 +734,41 @@ async function startSession(mode) {
     await room.localParticipant.setMicrophoneEnabled(true);
 
   } catch (err) {
-    showToast('Connection failed: ' + err.message, 5000);
+    showToast('Connection failed: ' + err.message);
     showView('select');
     setStatus('', 'Standby');
+    updateConnStrength('disconnected');
     console.error(err);
   }
 }
 
 async function endSession() {
-  if (room) {
-    await room.disconnect();
-    room = null;
-  }
+  if (room) { await room.disconnect(); room = null; }
   handleDisconnect();
 }
 
 function handleDisconnect() {
-  stopAnimation();
+  stopViz();
+  stopMicMeter();
+  stopTimer();
   showView('select');
   setStatus('', 'Standby');
+  updateConnStrength('disconnected');
   document.getElementById('footerMode').textContent = '—';
+  document.getElementById('muteBtn').classList.remove('muted');
+  document.getElementById('muteIcon').textContent = '🎤';
+  document.getElementById('muteLabel').textContent = 'Mute';
+  isMuted = false;
   currentMode = null;
-  // Remove any audio elements
   document.querySelectorAll('audio').forEach(el => el.remove());
 }
 
-// Init
 window.onload = () => {
   initVisualizer();
   showView('select');
+  updateConnStrength('disconnected');
   const cfg = loadConfig();
-  if (!cfg.livekitUrl) {
-    setTimeout(() => showToast('Set your LiveKit WSS URL in ⚙ Config'), 1000);
-  }
+  if (!cfg.livekitUrl) setTimeout(() => showToast('Set your LiveKit WSS URL in ⚙ Config', 'info', 4000), 800);
 };
 </script>
 </body>
