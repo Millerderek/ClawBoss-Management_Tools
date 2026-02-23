@@ -1,0 +1,76 @@
+version: '3.9'
+services:
+  livekit:
+    image: livekit/livekit-server:latest
+    container_name: livekit-server
+    restart: unless-stopped
+    ports:
+      - "7880:7880"
+      - "7881:7881"
+      - "7882:7882/udp"
+      - "50000-50100:50000-50100/udp"
+    env_file:
+      - livekit.env
+    volumes:
+      - ./livekit.yaml:/etc/livekit.yaml:ro
+    command:
+      - --config
+      - /etc/livekit.yaml
+    networks:
+      - voice-net
+  token-server:
+    build: .
+    container_name: livekit-token
+    restart: unless-stopped
+    ports:
+      - "8090:8090"
+    env_file:
+      - agent/.env
+    command: ["node", "token-server.js"]
+    depends_on:
+      - livekit
+    networks:
+      - voice-net
+  agent:
+    build: .
+    container_name: voice-gateway
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    env_file:
+      - agent/.env
+    volumes:
+      - ./agent/.env:/app/.env
+    networks:
+      - voice-net
+  resemblyzer:
+    build:
+      context: ./resemblyzer
+    container_name: clawboss-resemblyzer
+    restart: unless-stopped
+    ports:
+      - "5001:5001"
+    environment:
+      - CLAWVAULT_PATH=/etc/openclaw/clawboss
+    volumes:
+      - /etc/openclaw/clawboss:/etc/openclaw/clawboss
+    networks:
+      - voice-net
+  clawboss-agent:
+    build:
+      context: ./clawboss-agent
+    container_name: clawboss-agent
+    restart: unless-stopped
+    env_file:
+      - agent/.env
+    environment:
+      - LIVEKIT_URL=ws://livekit-server:7880
+      - LIVEKIT_API_KEY=clawboss-livekit
+      - LIVEKIT_API_SECRET=b7fe896ce5005418a3b3d1c85263aa9cc787b00e0307a70328cce252c4e3cd58
+    depends_on:
+      - livekit
+    networks:
+      - voice-net
+networks:
+  voice-net:
+    driver: bridge

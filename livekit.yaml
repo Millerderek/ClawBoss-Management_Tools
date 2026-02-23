@@ -1,0 +1,11 @@
+port: 7880
+rtc:
+  tcp_port: 7881
+  udp_port: 7882
+  port_range_start: 50000
+  port_range_end: 50100
+  use_external_ip: true
+keys:
+  clawboss-livekit: b7fe896ce5005418a3b3d1c85263aa9cc787b00e0307a70328cce252c4e3cd58
+logging:
+  level: info

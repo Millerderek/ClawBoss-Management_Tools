@@ -1,0 +1,7 @@
+livekit-agents==1.4.3
+livekit-plugins-deepgram==1.4.3
+livekit-plugins-elevenlabs==1.4.3
+livekit-plugins-openai==1.4.3
+livekit-plugins-silero==1.4.3
+av
+python-dotenv>=1.0.0
