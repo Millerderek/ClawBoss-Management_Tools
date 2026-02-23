@@ -1,85 +1,78 @@
-# Luther Voice Gateway
+# ClawBoss Voice Agent
 
-Streaming Twilio Media Streams into a full STT → LLM → TTS loop with barge-in-aware pacing, built on Express + WebSockets.
+A real-time AI voice assistant built on LiveKit, using Deepgram STT, OpenAI LLM, and ElevenLabs TTS.
 
 ## Architecture
+```
+Browser/Client → LiveKit WebRTC → clawboss-agent
+                                      ├── Deepgram (STT)
+                                      ├── GPT-4o-mini (LLM)
+                                      └── ElevenLabs (TTS)
+```
 
-- `/twilio/incoming` responds to Twilio with TwiML that immediately opens a `<Stream>` to the gateway and optionally plays a short greeting.
-- `wss://.../twilio/stream` accepts Twilio Media Stream connections, authenticates them with a shared token, and dispatches each caller to a `TwilioSession` state machine.
-- Each session lives through LISTENING → TRANSCRIBING → THINKING → SPEAKING states, streaming audio chunks through the configured STT/LLM/TTS adapters.
-- Barge-in detection watches inbound audio while the gateway is speaking. When a caller speaks, it aborts the LLM/TTS work and returns to listening.
+## Stack
 
-## Features
+- **LiveKit** — WebRTC room server
+- **livekit-agents 1.4.3** — Python agent framework
+- **Deepgram nova-2** — Speech-to-text
+- **GPT-4o-mini** — Language model
+- **ElevenLabs eleven_turbo_v2_5** — Text-to-speech
+- **Silero VAD** — Voice activity detection
+- **Resemblyzer** — Speaker embedding service (future: voice enrollment)
 
-- μ-law ↔ PCM conversion + optional resampling to match provider sample rates.
-- Configurable thresholds for VAD and frame pacing (default 20 ms frames, 8 kHz audio).
-- Provider adapter factory (mock implementations shipped; Google/OpenAI-ready hooks included).
-- Observability hooks emit console metrics per call (state transitions, barge-ins, timings).
+## Quick Start
 
-## Environment variables
-
-| Key | Description | Default/Notes |
-| --- | --- | --- |
-| `PORT` | HTTP + WebSocket service port | `9000` |
-| `TWILIO_INCOMING_PATH` | TwiML endpoint path | `/twilio/incoming` |
-| `TWILIO_STREAM_PATH` | WebSocket path Twilio streams to | `/twilio/stream` |
-| `TWILIO_STREAM_TOKEN` | Shared secret (`<Stream>` parameter `token`) | `luther-secret` |
-| `TWILIO_STREAM_URL` | External wss:// URL returned in TwiML | `wss://localhost:9000/twilio/stream` |
-| `TWILIO_GREETING` | Short text to read in `<Say>` | `Hold tight—connecting you to Luther.` |
-| `LLM_PROVIDER` | `openai` or `mock` | `openai` (falls back to mock if no key) |
-| `OPENAI_API_KEY` | Required for `openai` provider | — |
-| `STT_PROVIDER` | `google` or `mock` | `mock` |
-| `TTS_PROVIDER` | `google` or `mock` | `mock` |
-| `GOOGLE_APPLICATION_CREDENTIALS` | Path to service account JSON | Required for Google STT/TTS |
-| `GOOGLE_TTS_VOICE` | Voice name (e.g., `en-US-Wavenet-F`) | `en-US-Wavenet-F` |
-| `AUDIO_SAMPLE_RATE` | Internal PCM sample rate (Hz) | `8000` |
-| `VAD_THRESHOLD` | Minimum RMS to consider speech | `200` |
-| `SILENCE_FRAMES` | Number of <20 ms frames to wait before ending a turn | `8` |
-
-## Running
-
+### 1. Clone the repo
 ```bash
-cd voice-gateway
-npm install
-npm run dev     # iterate via ts-node
-npm run build   # emit CommonJS bundle in dist/
-npm start       # run compiled server
+git clone https://github.com/Millerderek/ClawBoss-Management_Tools.git
+cd ClawBoss-Management_Tools
 ```
 
-## Twilio configuration
-
-1. Point your voice webhook to `https://{your-host}{TWILIO_INCOMING_PATH}` (e.g., `https://voice.lutherbot.com/twilio/incoming`).
-2. The endpoint replies with TwiML that starts a `<Stream>` to `TWILIO_STREAM_URL` and sends the configured `token` parameter.
-3. When you set up the `<Stream>`, no STT/TTS/LLM work happens in the webhook. All streaming logic lives in the WebSocket handler.
-
-Example TwiML snippet that the endpoint returns:
-
-```xml
-<Response>
-  <Start>
-    <Stream url="wss://voice.lutherbot.com/twilio/stream" name="luther-session">
-      <Parameter name="token" value="your-token" />
-    </Stream>
-  </Start>
-  <Say voice="Polly.Joanna">Connecting you to Luther.</Say>
-</Response>
+### 2. Configure secrets
+```bash
+cp agent/.env.example agent/.env
+# Edit agent/.env with your API keys
 ```
 
-## Providers
+### 3. Start the stack
+```bash
+docker compose up -d
+```
 
-- **Mock adapters** (default) keep the gateway runnable without credentials. They return deterministic transcripts and generate short test tones.
-- **Google STT/TTS** use `@google-cloud/speech` and `@google-cloud/text-to-speech`. Make sure `GOOGLE_APPLICATION_CREDENTIALS` is set.
-- **OpenAI LLM** talks to `openai.chat.completions`. Set `OPENAI_API_KEY` and optionally `LLM_MODEL`.
+### 4. Get a connection token
+```bash
+curl "http://localhost:8090/token?room=clawboss&identity=manager"
+```
 
-You can mix & match providers by setting `STT_PROVIDER`, `LLM_PROVIDER`, and `TTS_PROVIDER`.
+### 5. Connect
 
-## Observability
+Use [meet.livekit.io](https://meet.livekit.io) with your LiveKit server URL and the token above.
 
-- Each session logs state transitions, barge-ins, and provider timings to stdout.
-- WebSocket connection details include the Twilio `callSid`/`streamSid` for cross-correlation.
+## Services
 
-## Next steps
+| Service | Port | Description |
+|---|---|---|
+| LiveKit server | 7880 | WebRTC room server |
+| Token server | 8090 | JWT token generation |
+| ClawBoss agent | 8081 | Voice agent worker |
+| Resemblyzer | 5001 | Speaker embeddings |
 
-- Add a metrics exporter (Prometheus / Honeycomb) if you need long-term call tracking.
-- Replace mock providers with your preferred streaming STT/LLM/TTS once you have API keys.
-- Optionally front the gateway with Cloudflare Tunnel or a TLS terminator so Twilio can reach it securely.
+## Session Modes
+
+Set `SPRING_SESSION_MODE` in `agent/.env`:
+
+- `conversational` — General assistant (default)
+- `clawboss` — Meeting note-taker focused on decisions, action items, blockers
+
+## Required API Keys
+
+- `OPENAI_API_KEY` — [platform.openai.com](https://platform.openai.com/api-keys)
+- `ELEVENLABS_API_KEY` — [elevenlabs.io](https://elevenlabs.io/app/settings/api-keys)
+- `DEEPGRAM_API_KEY` — [deepgram.com](https://console.deepgram.com)
+- `LIVEKIT_API_KEY` / `LIVEKIT_API_SECRET` — generated during setup
+
+## Notes
+
+- `agent/.env` is gitignored — never commit live API keys
+- ElevenLabs requires `sync_alignment=False` in livekit-agents 1.4.x
+- Default voice: Rachel (`21m00Tcm4TlvDq8ikWAM`) — change via `ELEVENLABS_VOICE_ID`
