@@ -3,185 +3,827 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ClawBoss — Start Session</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<title>ClawBoss</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/livekit-client/2.5.7/livekit-client.umd.min.js"></script>
 <style>
-:root{--bg:#0a0a0a;--surface:#111111;--border:#1e1e1e;--accent:#c8f135;--accent-dim:#8aab1f;--text:#e8e8e8;--muted:#555;--warning:#f1a035;--danger:#f13535}
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;min-height:100vh;display:flex;align-items:center;justify-content:center}
-body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(200,241,53,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(200,241,53,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none}
-.container{width:100%;max-width:520px;padding:24px;position:relative;z-index:1}
-.logo{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
-.tagline{font-size:11px;color:var(--muted);letter-spacing:.1em;margin-bottom:32px}
-.steps{display:flex;gap:8px;margin-bottom:24px}
-.step-dot{width:24px;height:3px;background:var(--border);border-radius:2px;transition:background .3s}
-.step-dot.active{background:var(--accent)}
-.step-dot.done{background:var(--accent-dim)}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:2px;padding:28px}
-.card-label{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:20px}
-.session-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
-.session-card{background:var(--bg);border:1px solid var(--border);border-radius:2px;padding:16px;cursor:pointer;transition:all .2s}
-.session-card:hover{border-color:var(--accent)}
-.session-card.selected{border-color:var(--accent);background:#111a00}
-.session-card.full-width{grid-column:1/-1}
-.session-icon{font-size:20px;margin-bottom:10px}
-.session-name{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px}
-.session-desc{font-size:10px;color:var(--muted);line-height:1.5}
-.session-badge{display:inline-block;font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:2px 6px;border-radius:2px;margin-top:8px}
-.badge-free{background:rgba(200,241,53,.15);color:var(--accent)}
-.badge-consent{background:rgba(241,160,53,.15);color:var(--warning)}
-.consent-notice{background:rgba(241,160,53,.08);border:1px solid rgba(241,160,53,.2);border-radius:2px;padding:12px 16px;font-size:11px;color:var(--warning);line-height:1.6;margin-top:16px;display:none}
-.consent-notice.visible{display:block}
-.input-group{margin-top:20px}
-.input-label{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:block}
-.input-field{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:2px;padding:12px 14px;font-family:'DM Mono',monospace;font-size:13px;color:var(--text);outline:none;transition:border-color .2s}
-.input-field:focus{border-color:var(--accent)}
-.input-field::placeholder{color:var(--muted)}
-.room-hint{font-size:10px;color:var(--muted);margin-top:6px}
-.launch-btn{width:100%;margin-top:24px;padding:14px;background:var(--accent);color:#0a0a0a;border:none;border-radius:2px;font-family:'Syne',sans-serif;font-size:13px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;transition:all .2s}
-.launch-btn:hover{background:#d4ff3a;transform:translateY(-1px);box-shadow:0 8px 24px rgba(200,241,53,.2)}
-.launch-btn:disabled{background:var(--border);color:var(--muted);cursor:not-allowed;transform:none;box-shadow:none}
-.status{margin-top:16px;font-size:11px;color:var(--muted);text-align:center;min-height:16px}
-.status.error{color:var(--danger)}
-.status.loading{color:var(--accent)}
-.token-box{display:none;margin-top:20px;background:var(--bg);border:1px solid var(--border);border-radius:2px;padding:16px}
-.token-box.visible{display:block}
-.token-label{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
-.token-value{font-size:10px;color:var(--accent-dim);word-break:break-all;line-height:1.6;margin-bottom:12px}
-.open-btn{display:block;width:100%;padding:10px;background:transparent;border:1px solid var(--accent);border-radius:2px;color:var(--accent);font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;text-align:center;text-decoration:none;transition:all .2s}
-.open-btn:hover{background:rgba(200,241,53,.08)}
-.server-config{margin-top:24px;padding-top:20px;border-top:1px solid var(--border)}
-.config-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+:root {
+  --bg: #080808;
+  --surface: #0f0f0f;
+  --border: #1a1a1a;
+  --accent: #c8f135;
+  --accent-glow: rgba(200,241,53,0.15);
+  --text: #e0e0e0;
+  --muted: #444;
+  --warning: #f0a030;
+  --danger: #e03030;
+  --active: #00e5ff;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  overflow: hidden;
+}
+
+/* Scanline effect */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.03) 2px,
+    rgba(0,0,0,0.03) 4px
+  );
+  pointer-events: none;
+  z-index: 100;
+}
+
+/* Grid */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(200,241,53,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(200,241,53,0.02) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events: none;
+}
+
+.app {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 1;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 28px;
+  border-bottom: 1px solid var(--border);
+}
+
+.logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  line-height: 1;
+}
+
+.logo span {
+  color: var(--muted);
+  font-size: 12px;
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 0.2em;
+  display: block;
+  margin-top: 2px;
+}
+
+.status-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--muted);
+  transition: all 0.3s;
+}
+
+.status-dot.connected { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+.status-dot.listening { background: var(--active); box-shadow: 0 0 8px var(--active); animation: pulse 1s infinite; }
+.status-dot.speaking { background: var(--warning); box-shadow: 0 0 8px var(--warning); animation: pulse 0.5s infinite; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.8); }
+}
+
+/* Main content */
+.main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px;
+  overflow: hidden;
+}
+
+/* SELECT VIEW */
+.select-view {
+  width: 100%;
+  max-width: 600px;
+  animation: fadeIn 0.4s ease;
+}
+
+.select-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 48px;
+  letter-spacing: 0.05em;
+  color: var(--text);
+  margin-bottom: 8px;
+  line-height: 1;
+}
+
+.select-sub {
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 32px;
+}
+
+.session-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.session-grid-bottom {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.session-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 20px 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+}
+
+.session-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.session-btn:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.session-btn:hover::before { opacity: 0.04; }
+
+.session-btn:active { transform: translateY(0); }
+
+.session-btn.consent-required {
+  border-color: rgba(240,160,48,0.2);
+}
+
+.session-btn.consent-required:hover {
+  border-color: var(--warning);
+}
+
+.session-btn.consent-required::before {
+  background: var(--warning);
+}
+
+.btn-icon {
+  font-size: 24px;
+  margin-bottom: 10px;
+  display: block;
+  position: relative;
+  z-index: 1;
+}
+
+.btn-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  letter-spacing: 0.08em;
+  color: var(--text);
+  display: block;
+  margin-bottom: 4px;
+  position: relative;
+  z-index: 1;
+}
+
+.btn-desc {
+  font-size: 10px;
+  color: var(--muted);
+  line-height: 1.5;
+  display: block;
+  position: relative;
+  z-index: 1;
+}
+
+.btn-tag {
+  display: inline-block;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 1px;
+  margin-top: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+.tag-free { background: rgba(200,241,53,0.1); color: var(--accent); }
+.tag-consent { background: rgba(240,160,48,0.1); color: var(--warning); }
+
+/* SESSION VIEW */
+.session-view {
+  display: none;
+  width: 100%;
+  max-width: 480px;
+  text-align: center;
+  animation: fadeIn 0.4s ease;
+}
+
+.session-view.active { display: block; }
+
+.session-mode-label {
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.session-mode-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 56px;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+  margin-bottom: 32px;
+  line-height: 1;
+}
+
+/* Visualizer */
+.visualizer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 3px;
+  height: 64px;
+  margin-bottom: 32px;
+}
+
+.bar {
+  width: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  transition: height 0.1s ease, background 0.3s;
+  min-height: 4px;
+}
+
+.bar.active { background: var(--accent); }
+.bar.agent { background: var(--warning); }
+
+/* State label */
+.state-label {
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 40px;
+  min-height: 16px;
+  transition: color 0.3s;
+}
+
+.state-label.listening { color: var(--active); }
+.state-label.speaking { color: var(--warning); }
+.state-label.thinking { color: var(--accent); }
+
+/* End button */
+.end-btn {
+  background: transparent;
+  border: 1px solid var(--danger);
+  border-radius: 2px;
+  padding: 10px 24px;
+  color: var(--danger);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.end-btn:hover {
+  background: rgba(224,48,48,0.1);
+}
+
+/* Connecting view */
+.connecting-view {
+  display: none;
+  text-align: center;
+  animation: fadeIn 0.3s ease;
+}
+
+.connecting-view.active { display: block; }
+
+.connecting-text {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 32px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+
+.connecting-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: dotPulse 1.2s ease infinite;
+}
+
+.dot:nth-child(2) { animation-delay: 0.2s; }
+.dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes dotPulse {
+  0%, 100% { opacity: 0.2; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+/* Footer */
+.footer {
+  padding: 12px 28px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+}
+
+.footer-mode {
+  color: var(--accent);
+  text-transform: uppercase;
+}
+
+/* Error toast */
+.toast {
+  position: fixed;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: #1a0000;
+  border: 1px solid var(--danger);
+  border-radius: 2px;
+  padding: 10px 20px;
+  font-size: 11px;
+  color: var(--danger);
+  opacity: 0;
+  transition: all 0.3s;
+  z-index: 200;
+  white-space: nowrap;
+}
+
+.toast.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Config panel */
+.config-toggle {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: color 0.2s;
+}
+
+.config-toggle:hover { color: var(--text); }
+
+.config-panel {
+  display: none;
+  position: fixed;
+  bottom: 48px;
+  right: 28px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 16px;
+  width: 280px;
+  z-index: 150;
+  animation: fadeIn 0.2s ease;
+}
+
+.config-panel.open { display: block; }
+
+.config-row {
+  margin-bottom: 12px;
+}
+
+.config-label {
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+  display: block;
+}
+
+.config-input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 8px 10px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--text);
+  outline: none;
+}
+
+.config-input:focus { border-color: var(--accent); }
+
+.config-save {
+  width: 100%;
+  padding: 8px;
+  background: var(--accent);
+  color: #080808;
+  border: none;
+  border-radius: 2px;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-weight: 500;
+}
 </style>
 </head>
 <body>
-<div class="container">
-  <div class="logo">⬡ ClawBoss</div>
-  <div class="tagline">AI Voice Session Manager</div>
-  <div class="steps">
-    <div class="step-dot active" id="step1"></div>
-    <div class="step-dot" id="step2"></div>
-    <div class="step-dot" id="step3"></div>
-  </div>
-  <div class="card">
-    <div class="card-label">01 — Select Session Type</div>
-    <div class="session-grid">
-      <div class="session-card" data-mode="braindump" onclick="selectMode(this)">
-        <div class="session-icon">🧠</div>
-        <div class="session-name">Brain Dump</div>
-        <div class="session-desc">Unstructured solo thought capture.</div>
-        <span class="session-badge badge-free">No Consent</span>
-      </div>
-      <div class="session-card" data-mode="voicenote" onclick="selectMode(this)">
-        <div class="session-icon">🎙️</div>
-        <div class="session-name">Voice Note</div>
-        <div class="session-desc">Quick memo or reminder.</div>
-        <span class="session-badge badge-free">No Consent</span>
-      </div>
-      <div class="session-card" data-mode="1on1" onclick="selectMode(this)">
-        <div class="session-icon">👥</div>
-        <div class="session-name">1:1 Meeting</div>
-        <div class="session-desc">Two-party session with disclosure.</div>
-        <span class="session-badge badge-consent">Consent Required</span>
-      </div>
-      <div class="session-card" data-mode="conference" onclick="selectMode(this)">
-        <div class="session-icon">🏢</div>
-        <div class="session-name">Conference</div>
-        <div class="session-desc">Multi-party call with disclosure.</div>
-        <span class="session-badge badge-consent">Consent Required</span>
-      </div>
-      <div class="session-card full-width" data-mode="interview" onclick="selectMode(this)">
-        <div class="session-icon">📋</div>
-        <div class="session-name">Interview</div>
-        <div class="session-desc">Structured Q&A with full transcript. Consent required before recording begins.</div>
-        <span class="session-badge badge-consent">Consent Required</span>
-      </div>
+
+<div class="app">
+  <div class="header">
+    <div class="logo">
+      ClawBoss
+      <span>Voice Session Manager</span>
     </div>
-    <div class="consent-notice" id="consentNotice">
-      ⚠ ClawBoss will announce at session start: <em>"This session is being recorded and transcribed by an AI assistant. By continuing, all participants consent to recording."</em>
-    </div>
-    <div class="input-group">
-      <label class="input-label" for="identityInput">02 — Your Name</label>
-      <input class="input-field" id="identityInput" type="text" placeholder="e.g. derek" autocomplete="off" oninput="updateState()">
-    </div>
-    <div class="input-group">
-      <label class="input-label" for="roomInput">03 — Room Name</label>
-      <input class="input-field" id="roomInput" type="text" placeholder="clawboss" value="clawboss" autocomplete="off" oninput="updateState()">
-      <div class="room-hint">Leave as "clawboss" for default room</div>
-    </div>
-    <button class="launch-btn" id="launchBtn" onclick="launch()" disabled>Get Token &amp; Launch →</button>
-    <div class="status" id="status"></div>
-    <div class="token-box" id="tokenBox">
-      <div class="token-label">Token Generated</div>
-      <div class="token-value" id="tokenValue"></div>
-      <a class="open-btn" id="openLink" href="#" target="_blank">Open in LiveKit Playground →</a>
+    <div class="status-bar">
+      <div class="status-dot" id="statusDot"></div>
+      <span id="statusText">STANDBY</span>
     </div>
   </div>
-  <div class="server-config">
-    <div class="card-label" style="margin-bottom:12px">Server Config</div>
-    <div class="config-row">
-      <div>
-        <label class="input-label" for="serverUrl">Token Server</label>
-        <input class="input-field" id="serverUrl" type="text" value="" placeholder="https://your-token-server">
+
+  <div class="main">
+
+    <!-- SELECT SESSION TYPE -->
+    <div class="select-view" id="selectView">
+      <div class="select-title">Start Session</div>
+      <div class="select-sub">Select a session type to begin — no sign-in required</div>
+
+      <div class="session-grid">
+        <button class="session-btn" onclick="startSession('braindump')">
+          <span class="btn-icon">🧠</span>
+          <span class="btn-name">Brain Dump</span>
+          <span class="btn-desc">Unstructured solo thought capture</span>
+          <span class="btn-tag tag-free">Solo · No Consent</span>
+        </button>
+        <button class="session-btn" onclick="startSession('voicenote')">
+          <span class="btn-icon">🎙️</span>
+          <span class="btn-name">Voice Note</span>
+          <span class="btn-desc">Quick memo or reminder</span>
+          <span class="btn-tag tag-free">Solo · No Consent</span>
+        </button>
+        <button class="session-btn consent-required" onclick="startSession('1on1')">
+          <span class="btn-icon">👥</span>
+          <span class="btn-name">1:1 Meeting</span>
+          <span class="btn-desc">Two-party session with disclosure</span>
+          <span class="btn-tag tag-consent">Consent Required</span>
+        </button>
       </div>
-      <div>
-        <label class="input-label" for="livekitUrl">LiveKit WSS</label>
-        <input class="input-field" id="livekitUrl" type="text" value="wss://livekit.lutherbot.com" placeholder="wss://your-domain">
+      <div class="session-grid-bottom">
+        <button class="session-btn consent-required" onclick="startSession('conference')">
+          <span class="btn-icon">🏢</span>
+          <span class="btn-name">Conference</span>
+          <span class="btn-desc">Multi-party call with recording disclosure</span>
+          <span class="btn-tag tag-consent">Consent Required</span>
+        </button>
+        <button class="session-btn consent-required" onclick="startSession('interview')">
+          <span class="btn-icon">📋</span>
+          <span class="btn-name">Interview</span>
+          <span class="btn-desc">Structured Q&A with full transcript</span>
+          <span class="btn-tag tag-consent">Consent Required</span>
+        </button>
       </div>
     </div>
+
+    <!-- CONNECTING -->
+    <div class="connecting-view" id="connectingView">
+      <div class="connecting-text">Connecting</div>
+      <div class="connecting-dots">
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+    </div>
+
+    <!-- ACTIVE SESSION -->
+    <div class="session-view" id="sessionView">
+      <div class="session-mode-label">Active Session</div>
+      <div class="session-mode-name" id="sessionModeName">—</div>
+
+      <div class="visualizer" id="visualizer"></div>
+
+      <div class="state-label" id="stateLabel">Initializing...</div>
+
+      <button class="end-btn" onclick="endSession()">End Session</button>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <span>ClawBoss v1.0 · <span class="footer-mode" id="footerMode">—</span></span>
+    <button class="config-toggle" onclick="toggleConfig()">⚙ Config</button>
   </div>
 </div>
+
+<!-- Config Panel -->
+<div class="config-panel" id="configPanel">
+  <div class="config-row">
+    <label class="config-label">Token Server URL</label>
+    <input class="config-input" id="cfgTokenServer" type="text" placeholder="http://localhost:8090">
+  </div>
+  <div class="config-row">
+    <label class="config-label">LiveKit WSS URL</label>
+    <input class="config-input" id="cfgLiveKitUrl" type="text" placeholder="wss://your-livekit-server">
+  </div>
+  <div class="config-row">
+    <label class="config-label">Room Name</label>
+    <input class="config-input" id="cfgRoom" type="text" placeholder="clawboss" value="clawboss">
+  </div>
+  <button class="config-save" onclick="saveConfig()">Save Config</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
 <script>
-let selectedMode=null;
-// Auto-detect token server URL from current page
-window.onload=()=>{
-  document.getElementById('serverUrl').value=window.location.origin;
+// ── Config ──────────────────────────────────────────────────────────────────
+const DEFAULTS = {
+  tokenServer: window.location.origin,
+  livekitUrl: '',
+  room: 'clawboss'
 };
-function selectMode(el){
-  document.querySelectorAll('.session-card').forEach(c=>c.classList.remove('selected'));
-  el.classList.add('selected');
-  selectedMode=el.dataset.mode;
-  const consentModes=['1on1','conference','interview'];
-  document.getElementById('consentNotice').classList.toggle('visible',consentModes.includes(selectedMode));
-  document.getElementById('step1').classList.add('done');
-  document.getElementById('step2').classList.add('active');
-  updateState();
+
+function loadConfig() {
+  return {
+    tokenServer: localStorage.getItem('cb_token_server') || DEFAULTS.tokenServer,
+    livekitUrl: localStorage.getItem('cb_livekit_url') || DEFAULTS.livekitUrl,
+    room: localStorage.getItem('cb_room') || DEFAULTS.room
+  };
 }
-function updateState(){
-  const identity=document.getElementById('identityInput').value.trim();
-  const room=document.getElementById('roomInput').value.trim();
-  document.getElementById('launchBtn').disabled=!(selectedMode&&identity&&room);
-  if(selectedMode&&identity){
-    document.getElementById('step2').classList.add('done');
-    document.getElementById('step3').classList.add('active');
+
+function saveConfig() {
+  const cfg = {
+    tokenServer: document.getElementById('cfgTokenServer').value.trim(),
+    livekitUrl: document.getElementById('cfgLiveKitUrl').value.trim(),
+    room: document.getElementById('cfgRoom').value.trim() || 'clawboss'
+  };
+  localStorage.setItem('cb_token_server', cfg.tokenServer);
+  localStorage.setItem('cb_livekit_url', cfg.livekitUrl);
+  localStorage.setItem('cb_room', cfg.room);
+  toggleConfig();
+  showToast('Config saved');
+}
+
+function toggleConfig() {
+  const panel = document.getElementById('configPanel');
+  const cfg = loadConfig();
+  document.getElementById('cfgTokenServer').value = cfg.tokenServer;
+  document.getElementById('cfgLiveKitUrl').value = cfg.livekitUrl;
+  document.getElementById('cfgRoom').value = cfg.room;
+  panel.classList.toggle('open');
+}
+
+// ── State ────────────────────────────────────────────────────────────────────
+let room = null;
+let currentMode = null;
+let animFrame = null;
+const bars = [];
+
+// ── Visualizer ───────────────────────────────────────────────────────────────
+function initVisualizer() {
+  const viz = document.getElementById('visualizer');
+  viz.innerHTML = '';
+  bars.length = 0;
+  for (let i = 0; i < 32; i++) {
+    const bar = document.createElement('div');
+    bar.className = 'bar';
+    viz.appendChild(bar);
+    bars.push(bar);
   }
 }
-async function launch(){
-  const identity=document.getElementById('identityInput').value.trim();
-  const room=document.getElementById('roomInput').value.trim();
-  const serverUrl=document.getElementById('serverUrl').value.trim();
-  const livekitUrl=document.getElementById('livekitUrl').value.trim();
-  const status=document.getElementById('status');
-  const btn=document.getElementById('launchBtn');
-  btn.disabled=true;
-  status.className='status loading';
-  status.textContent='Requesting token...';
-  try{
-    const res=await fetch(`${serverUrl}/token?room=${encodeURIComponent(room)}&identity=${encodeURIComponent(identity)}&mode=${encodeURIComponent(selectedMode)}`);
-    if(!res.ok)throw new Error(`Server returned ${res.status}`);
-    const data=await res.json();
-    document.getElementById('tokenValue').textContent=data.token.substring(0,80)+'...';
-    document.getElementById('tokenBox').classList.add('visible');
-    document.getElementById('openLink').href=`https://meet.livekit.io/#${encodeURIComponent(JSON.stringify({url:livekitUrl,token:data.token}))}`;
-    status.className='status';
-    status.textContent=`✓ ${selectedMode} session ready as "${identity}"`;
-    document.getElementById('step3').classList.add('done');
-  }catch(err){
-    status.className='status error';
-    status.textContent=`Error: ${err.message}`;
-    btn.disabled=false;
+
+function animateBars(type, intensity) {
+  bars.forEach((bar, i) => {
+    const wave = Math.sin(Date.now() * 0.005 + i * 0.4) * 0.5 + 0.5;
+    const rand = Math.random() * 0.3;
+    const h = type === 'idle' ? 4 : Math.max(4, (wave + rand) * intensity);
+    bar.style.height = h + 'px';
+    bar.className = 'bar ' + (type !== 'idle' ? type : '');
+  });
+}
+
+function startAnimation(type, intensity = 40) {
+  if (animFrame) cancelAnimationFrame(animFrame);
+  function frame() {
+    animateBars(type, intensity);
+    animFrame = requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+function stopAnimation() {
+  if (animFrame) cancelAnimationFrame(animFrame);
+  bars.forEach(b => { b.style.height = '4px'; b.className = 'bar'; });
+}
+
+// ── UI helpers ────────────────────────────────────────────────────────────────
+function setStatus(state, text) {
+  const dot = document.getElementById('statusDot');
+  const label = document.getElementById('statusText');
+  dot.className = 'status-dot ' + state;
+  label.textContent = text;
+}
+
+function setState(state, text) {
+  const label = document.getElementById('stateLabel');
+  label.className = 'state-label ' + state;
+  label.textContent = text;
+}
+
+function showView(name) {
+  document.getElementById('selectView').style.display = name === 'select' ? '' : 'none';
+  document.getElementById('connectingView').className = 'connecting-view' + (name === 'connecting' ? ' active' : '');
+  document.getElementById('sessionView').className = 'session-view' + (name === 'session' ? ' active' : '');
+}
+
+function showToast(msg, duration = 3000) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('visible');
+  setTimeout(() => t.classList.remove('visible'), duration);
+}
+
+const MODE_NAMES = {
+  braindump: 'Brain Dump',
+  voicenote: 'Voice Note',
+  '1on1': '1:1 Meeting',
+  conference: 'Conference',
+  interview: 'Interview'
+};
+
+// ── Session ───────────────────────────────────────────────────────────────────
+async function startSession(mode) {
+  const cfg = loadConfig();
+
+  if (!cfg.livekitUrl) {
+    showToast('Set LiveKit WSS URL in ⚙ Config first');
+    toggleConfig();
+    return;
+  }
+
+  currentMode = mode;
+  showView('connecting');
+  setStatus('', 'Connecting...');
+  initVisualizer();
+
+  document.getElementById('sessionModeName').textContent = MODE_NAMES[mode] || mode;
+  document.getElementById('footerMode').textContent = mode.toUpperCase();
+
+  try {
+    // Get token
+    const identity = 'user-' + Math.random().toString(36).slice(2, 7);
+    const tokenRes = await fetch(
+      `${cfg.tokenServer}/token?room=${encodeURIComponent(cfg.room)}&identity=${encodeURIComponent(identity)}&mode=${encodeURIComponent(mode)}`
+    );
+    if (!tokenRes.ok) throw new Error(`Token server error: ${tokenRes.status}`);
+    const { token } = await tokenRes.json();
+
+    // Connect to LiveKit
+    room = new LivekitClient.Room({
+      audioCaptureDefaults: { echoCancellation: true, noiseSuppression: true }
+    });
+
+    room.on(LivekitClient.RoomEvent.Connected, () => {
+      showView('session');
+      setStatus('connected', 'Connected');
+      setState('listening', 'Waiting for agent...');
+    });
+
+    room.on(LivekitClient.RoomEvent.Disconnected, () => {
+      handleDisconnect();
+    });
+
+    room.on(LivekitClient.RoomEvent.ActiveSpeakersChanged, (speakers) => {
+      const isAgentSpeaking = speakers.some(s => s.identity !== identity);
+      const isUserSpeaking = speakers.some(s => s.identity === identity);
+
+      if (isAgentSpeaking) {
+        setState('speaking', 'ClawBoss speaking...');
+        setStatus('speaking', 'Agent Speaking');
+        startAnimation('agent', 48);
+      } else if (isUserSpeaking) {
+        setState('listening', 'Listening...');
+        setStatus('listening', 'Listening');
+        startAnimation('active', 40);
+      } else {
+        setState('', 'Ready');
+        setStatus('connected', 'Connected');
+        startAnimation('idle', 0);
+      }
+    });
+
+    room.on(LivekitClient.RoomEvent.TrackSubscribed, (track, pub, participant) => {
+      if (track.kind === LivekitClient.Track.Kind.Audio) {
+        const el = track.attach();
+        el.style.display = 'none';
+        document.body.appendChild(el);
+      }
+    });
+
+    room.on(LivekitClient.RoomEvent.TrackUnsubscribed, (track) => {
+      track.detach().forEach(el => el.remove());
+    });
+
+    await room.connect(cfg.livekitUrl, token);
+    await room.localParticipant.setMicrophoneEnabled(true);
+
+  } catch (err) {
+    showToast('Connection failed: ' + err.message, 5000);
+    showView('select');
+    setStatus('', 'Standby');
+    console.error(err);
   }
 }
+
+async function endSession() {
+  if (room) {
+    await room.disconnect();
+    room = null;
+  }
+  handleDisconnect();
+}
+
+function handleDisconnect() {
+  stopAnimation();
+  showView('select');
+  setStatus('', 'Standby');
+  document.getElementById('footerMode').textContent = '—';
+  currentMode = null;
+  // Remove any audio elements
+  document.querySelectorAll('audio').forEach(el => el.remove());
+}
+
+// Init
+window.onload = () => {
+  initVisualizer();
+  showView('select');
+  const cfg = loadConfig();
+  if (!cfg.livekitUrl) {
+    setTimeout(() => showToast('Set your LiveKit WSS URL in ⚙ Config'), 1000);
+  }
+};
 </script>
 </body>
 </html>
