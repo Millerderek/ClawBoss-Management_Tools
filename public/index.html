@@ -2,88 +2,52 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>ClawBoss</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/livekit-client/2.5.7/livekit-client.umd.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/livekit-client@2.9.1/dist/livekit-client.umd.js"></script>
 <style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
 :root {
   --bg: #080808;
   --surface: #0f0f0f;
   --border: #1a1a1a;
+  --text: #e8e8e8;
+  --muted: #555;
   --accent: #c8f135;
-  --accent-dim: #8aab1f;
-  --text: #e0e0e0;
-  --muted: #444;
+  --active: #35f1c8;
   --warning: #f0a030;
   --danger: #e03030;
-  --active: #00e5ff;
-  --good: #00e676;
+  --good: #35f1c8;
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'DM Mono', monospace; overflow: hidden; }
+html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'DM Mono', monospace; overflow: hidden; -webkit-font-smoothing: antialiased; }
 
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
-  pointer-events: none;
-  z-index: 100;
-}
-
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image: linear-gradient(rgba(200,241,53,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(200,241,53,0.02) 1px, transparent 1px);
-  background-size: 32px 32px;
-  pointer-events: none;
-}
-
-.app { height: 100vh; display: flex; flex-direction: column; position: relative; z-index: 1; }
+.app { display: flex; flex-direction: column; height: 100%; }
 
 /* Header */
 .header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 24px;
-  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 24px; border-bottom: 1px solid var(--border);
 }
-
-.logo { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 0.1em; color: var(--accent); line-height: 1; }
-.logo span { color: var(--muted); font-size: 10px; font-family: 'DM Mono', monospace; letter-spacing: 0.2em; display: block; margin-top: 2px; }
-
+.logo { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 0.08em; color: var(--text); }
+.logo span { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); letter-spacing: 0.12em; margin-left: 8px; vertical-align: middle; }
 .header-right { display: flex; align-items: center; gap: 16px; }
 
-/* Connection strength */
-.conn-strength {
-  display: flex;
-  align-items: flex-end;
-  gap: 2px;
-  height: 16px;
-}
-
-.conn-bar {
-  width: 4px;
-  background: var(--border);
-  border-radius: 1px;
-  transition: background 0.3s;
-}
-
+/* Connection bars */
+.conn-strength { display: flex; align-items: flex-end; gap: 2px; height: 16px; }
+.conn-bar { width: 4px; border-radius: 1px; background: var(--border); transition: background 0.3s; }
 .conn-bar:nth-child(1) { height: 4px; }
 .conn-bar:nth-child(2) { height: 8px; }
 .conn-bar:nth-child(3) { height: 12px; }
 .conn-bar:nth-child(4) { height: 16px; }
-
 .conn-strength.excellent .conn-bar { background: var(--good); }
 .conn-strength.good .conn-bar:nth-child(-n+3) { background: var(--good); }
 .conn-strength.fair .conn-bar:nth-child(-n+2) { background: var(--warning); }
 .conn-strength.poor .conn-bar:nth-child(1) { background: var(--danger); }
 .conn-strength.disconnected .conn-bar { background: var(--border); }
-
 .conn-label { font-size: 9px; letter-spacing: 0.1em; color: var(--muted); margin-left: 6px; text-transform: uppercase; }
 
 /* Status */
@@ -92,7 +56,6 @@ body::before {
 .status-dot.connected { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
 .status-dot.listening { background: var(--active); box-shadow: 0 0 8px var(--active); animation: pulse 1s infinite; }
 .status-dot.speaking { background: var(--warning); box-shadow: 0 0 8px var(--warning); animation: pulse 0.5s infinite; }
-
 @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(0.8); } }
 
 /* Main */
@@ -102,22 +65,13 @@ body::before {
 .select-view { width: 100%; max-width: 600px; animation: fadeIn 0.4s ease; }
 .select-title { font-family: 'Bebas Neue', sans-serif; font-size: 44px; letter-spacing: 0.05em; color: var(--text); margin-bottom: 6px; line-height: 1; }
 .select-sub { font-size: 10px; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 28px; }
-
 .session-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px; }
 .session-grid-bottom { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
 .session-btn {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 2px;
-  padding: 18px 14px;
-  cursor: pointer;
-  transition: all 0.2s;
-  text-align: left;
-  position: relative;
-  overflow: hidden;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 2px;
+  padding: 18px 14px; cursor: pointer; transition: all 0.2s; text-align: left; position: relative; overflow: hidden;
 }
-
 .session-btn::before { content: ''; position: absolute; inset: 0; background: var(--accent); opacity: 0; transition: opacity 0.2s; }
 .session-btn:hover { border-color: var(--accent); transform: translateY(-2px); }
 .session-btn:hover::before { opacity: 0.04; }
@@ -136,60 +90,25 @@ body::before {
 /* SESSION VIEW */
 .session-view { display: none; width: 100%; max-width: 520px; animation: fadeIn 0.4s ease; }
 .session-view.active { display: block; }
-
 .session-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
 .session-mode-label { font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--muted); }
 .session-mode-name { font-family: 'Bebas Neue', sans-serif; font-size: 40px; letter-spacing: 0.05em; color: var(--accent); line-height: 1; }
 
 /* Stats row */
-.stats-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 8px;
-  margin-bottom: 24px;
-}
-
-.stat-box {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 2px;
-  padding: 10px 12px;
-}
-
+.stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 24px; }
+.stat-box { background: var(--surface); border: 1px solid var(--border); border-radius: 2px; padding: 10px 12px; }
 .stat-label { font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; display: block; }
 .stat-value { font-size: 11px; color: var(--text); }
 
 /* Mic meter */
-.mic-meter {
-  display: flex;
-  align-items: flex-end;
-  gap: 2px;
-  height: 20px;
-}
-
-.mic-bar {
-  flex: 1;
-  background: var(--border);
-  border-radius: 1px;
-  transition: height 0.05s ease, background 0.2s;
-  min-height: 2px;
-}
-
+.mic-meter { display: flex; align-items: flex-end; gap: 2px; height: 20px; }
+.mic-bar { flex: 1; background: var(--border); border-radius: 1px; transition: height 0.05s ease, background 0.2s; min-height: 2px; }
 .mic-bar.low { background: var(--accent); }
 .mic-bar.mid { background: var(--warning); }
 .mic-bar.high { background: var(--danger); }
 
 /* Visualizer */
-.visualizer {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  gap: 3px;
-  height: 56px;
-  margin-bottom: 20px;
-  padding: 0 8px;
-}
-
+.visualizer { display: flex; align-items: flex-end; justify-content: center; gap: 3px; height: 56px; margin-bottom: 20px; padding: 0 8px; }
 .bar { width: 4px; background: var(--border); border-radius: 2px; transition: height 0.1s ease, background 0.3s; min-height: 3px; }
 .bar.active { background: var(--accent); }
 .bar.agent { background: var(--warning); }
@@ -202,42 +121,20 @@ body::before {
 
 /* Controls */
 .controls { display: flex; align-items: center; justify-content: center; gap: 12px; }
-
 .ctrl-btn {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 2px;
-  padding: 8px 16px;
-  color: var(--muted);
-  font-family: 'DM Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 2px;
+  padding: 8px 16px; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 10px;
+  letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; gap: 6px;
 }
-
 .ctrl-btn:hover { border-color: var(--text); color: var(--text); }
 .ctrl-btn.muted { border-color: var(--danger); color: var(--danger); }
 .ctrl-btn.muted:hover { background: rgba(224,48,48,0.1); }
-
 .end-btn {
-  background: transparent;
-  border: 1px solid var(--danger);
-  border-radius: 2px;
-  padding: 8px 20px;
-  color: var(--danger);
-  font-family: 'DM Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: all 0.2s;
+  background: transparent; border: 1px solid var(--danger); border-radius: 2px;
+  padding: 8px 20px; color: var(--danger); font-family: 'DM Mono', monospace; font-size: 10px;
+  letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; transition: all 0.2s;
 }
-
 .end-btn:hover { background: rgba(224,48,48,0.1); }
 
 /* Connecting */
@@ -252,63 +149,52 @@ body::before {
 
 /* Footer */
 .footer {
-  padding: 10px 24px;
-  border-top: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 9px;
-  color: var(--muted);
-  letter-spacing: 0.1em;
+  padding: 10px 24px; border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 9px; color: var(--muted); letter-spacing: 0.1em;
 }
-
 .footer-mode { color: var(--accent); text-transform: uppercase; }
 
 /* Toast */
 .toast {
-  position: fixed;
-  bottom: 52px;
-  left: 50%;
-  transform: translateX(-50%) translateY(20px);
-  background: #1a0000;
-  border: 1px solid var(--danger);
-  border-radius: 2px;
-  padding: 8px 16px;
-  font-size: 10px;
-  color: var(--danger);
-  opacity: 0;
-  transition: all 0.3s;
-  z-index: 200;
-  white-space: nowrap;
+  position: fixed; bottom: 52px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: #1a0000; border: 1px solid var(--danger); border-radius: 2px;
+  padding: 8px 16px; font-size: 10px; color: var(--danger); opacity: 0;
+  transition: all 0.3s; z-index: 200; white-space: nowrap;
 }
-
 .toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
 .toast.info { background: #0a1a00; border-color: var(--accent); color: var(--accent); }
 
 /* Config panel */
 .config-toggle { background: none; border: none; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.1em; cursor: pointer; padding: 3px 6px; transition: color 0.2s; }
 .config-toggle:hover { color: var(--text); }
-
 .config-panel {
-  display: none;
-  position: fixed;
-  bottom: 44px;
-  right: 24px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 2px;
-  padding: 14px;
-  width: 260px;
-  z-index: 150;
-  animation: fadeIn 0.2s ease;
+  display: none; position: fixed; bottom: 44px; right: 24px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 2px;
+  padding: 14px; width: 260px; z-index: 150; animation: fadeIn 0.2s ease;
 }
-
 .config-panel.open { display: block; }
 .config-row { margin-bottom: 10px; }
 .config-label { font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; display: block; }
 .config-input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 2px; padding: 7px 9px; font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text); outline: none; }
 .config-input:focus { border-color: var(--accent); }
 .config-save { width: 100%; padding: 7px; background: var(--accent); color: #080808; border: none; border-radius: 2px; font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; font-weight: 500; }
+
+/* Debug panel */
+.debug-panel {
+  display: none; position: fixed; top: 44px; right: 24px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 2px;
+  padding: 10px; width: 340px; max-height: 300px; overflow-y: auto; z-index: 150;
+  font-size: 9px; line-height: 1.6; color: var(--muted);
+}
+.debug-panel.open { display: block; }
+.debug-panel pre { white-space: pre-wrap; word-break: break-all; }
+.debug-line { border-bottom: 1px solid var(--border); padding: 2px 0; }
+.debug-line.error { color: var(--danger); }
+.debug-line.success { color: var(--good); }
+.debug-line.warn { color: var(--warning); }
+.debug-toggle { background: none; border: none; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 9px; cursor: pointer; padding: 3px 6px; }
+.debug-toggle:hover { color: var(--text); }
 
 @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 </style>
@@ -318,13 +204,10 @@ body::before {
   <div class="header">
     <div class="logo">ClawBoss <span>Voice Session Manager</span></div>
     <div class="header-right">
-      <!-- Connection strength -->
+      <button class="debug-toggle" onclick="toggleDebug()">Debug</button>
       <div style="display:flex;align-items:center;gap:4px" id="connStrengthWrap">
         <div class="conn-strength disconnected" id="connStrength">
-          <div class="conn-bar"></div>
-          <div class="conn-bar"></div>
-          <div class="conn-bar"></div>
-          <div class="conn-bar"></div>
+          <div class="conn-bar"></div><div class="conn-bar"></div><div class="conn-bar"></div><div class="conn-bar"></div>
         </div>
         <span class="conn-label" id="connLabel">—</span>
       </div>
@@ -336,41 +219,35 @@ body::before {
   </div>
 
   <div class="main">
-
     <!-- SELECT -->
     <div class="select-view" id="selectView">
       <div class="select-title">Start Session</div>
       <div class="select-sub">Select session type — no sign-in required</div>
       <div class="session-grid">
         <button class="session-btn" onclick="startSession('braindump')">
-          <span class="btn-icon">🧠</span>
-          <span class="btn-name">Brain Dump</span>
+          <span class="btn-icon">🧠</span><span class="btn-name">Brain Dump</span>
           <span class="btn-desc">Unstructured solo thought capture</span>
           <span class="btn-tag tag-free">Solo · No Consent</span>
         </button>
         <button class="session-btn" onclick="startSession('voicenote')">
-          <span class="btn-icon">🎙️</span>
-          <span class="btn-name">Voice Note</span>
+          <span class="btn-icon">🎙️</span><span class="btn-name">Voice Note</span>
           <span class="btn-desc">Quick memo or reminder</span>
           <span class="btn-tag tag-free">Solo · No Consent</span>
         </button>
         <button class="session-btn consent-required" onclick="startSession('1on1')">
-          <span class="btn-icon">👥</span>
-          <span class="btn-name">1:1 Meeting</span>
+          <span class="btn-icon">👥</span><span class="btn-name">1:1 Meeting</span>
           <span class="btn-desc">Two-party with disclosure</span>
           <span class="btn-tag tag-consent">Consent Required</span>
         </button>
       </div>
       <div class="session-grid-bottom">
         <button class="session-btn consent-required" onclick="startSession('conference')">
-          <span class="btn-icon">🏢</span>
-          <span class="btn-name">Conference</span>
+          <span class="btn-icon">🏢</span><span class="btn-name">Conference</span>
           <span class="btn-desc">Multi-party call with recording disclosure</span>
           <span class="btn-tag tag-consent">Consent Required</span>
         </button>
         <button class="session-btn consent-required" onclick="startSession('interview')">
-          <span class="btn-icon">📋</span>
-          <span class="btn-name">Interview</span>
+          <span class="btn-icon">📋</span><span class="btn-name">Interview</span>
           <span class="btn-desc">Structured Q&A with full transcript</span>
           <span class="btn-tag tag-consent">Consent Required</span>
         </button>
@@ -396,7 +273,6 @@ body::before {
         </div>
       </div>
 
-      <!-- Stats -->
       <div class="stats-row">
         <div class="stat-box">
           <span class="stat-label">Mic Level</span>
@@ -410,8 +286,7 @@ body::before {
           <span class="stat-label">Connection</span>
           <div style="display:flex;align-items:center;gap:6px;margin-top:2px">
             <div class="conn-strength disconnected" id="connStrength2">
-              <div class="conn-bar"></div><div class="conn-bar"></div>
-              <div class="conn-bar"></div><div class="conn-bar"></div>
+              <div class="conn-bar"></div><div class="conn-bar"></div><div class="conn-bar"></div><div class="conn-bar"></div>
             </div>
             <span style="font-size:10px;color:var(--text)" id="connLabel2">—</span>
           </div>
@@ -422,24 +297,20 @@ body::before {
         </div>
       </div>
 
-      <!-- Visualizer -->
       <div class="visualizer" id="visualizer"></div>
-
       <div class="state-label" id="stateLabel">Initializing...</div>
 
       <div class="controls">
         <button class="ctrl-btn" id="muteBtn" onclick="toggleMute()">
-          <span id="muteIcon">🎤</span>
-          <span id="muteLabel">Mute</span>
+          <span id="muteIcon">🎤</span><span id="muteLabel">Mute</span>
         </button>
         <button class="end-btn" onclick="endSession()">End Session</button>
       </div>
     </div>
-
   </div>
 
   <div class="footer">
-    <span>ClawBoss v1.1 · <span class="footer-mode" id="footerMode">—</span></span>
+    <span>ClawBoss v1.2 · <span class="footer-mode" id="footerMode">—</span></span>
     <button class="config-toggle" onclick="toggleConfig()">⚙ Config</button>
   </div>
 </div>
@@ -458,18 +329,57 @@ body::before {
     <label class="config-label">Room Name</label>
     <input class="config-input" id="cfgRoom" type="text" placeholder="clawboss">
   </div>
+  <div class="config-row">
+    <label class="config-label">Microphone Input</label>
+    <select class="config-input" id="cfgMicDevice" style="cursor:pointer">
+      <option value="">Default Microphone</option>
+    </select>
+  </div>
   <button class="config-save" onclick="saveConfig()">Save Config</button>
 </div>
+
+<!-- Debug Panel -->
+<div class="debug-panel" id="debugPanel"></div>
 
 <div class="toast" id="toast"></div>
 
 <script>
+// ══════════════════════════════════════════════════════════════════════════════
+// ClawBoss v1.2 — Fixed: mic meter uses LiveKit track, no duplicate getUserMedia
+// ══════════════════════════════════════════════════════════════════════════════
+
+// ── Debug Logger ─────────────────────────────────────────────────────────────
+const debugLines = [];
+function dbg(msg, level = 'info') {
+  const ts = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  debugLines.push({ ts, msg, level });
+  if (debugLines.length > 80) debugLines.shift();
+  const panel = document.getElementById('debugPanel');
+  if (panel.classList.contains('open')) renderDebug();
+  console.log(`[ClawBoss:${level}] ${msg}`);
+}
+
+function renderDebug() {
+  const panel = document.getElementById('debugPanel');
+  panel.innerHTML = debugLines.map(d =>
+    `<div class="debug-line ${d.level}">${d.ts} ${d.msg}</div>`
+  ).join('');
+  panel.scrollTop = panel.scrollHeight;
+}
+
+function toggleDebug() {
+  const panel = document.getElementById('debugPanel');
+  panel.classList.toggle('open');
+  if (panel.classList.contains('open')) renderDebug();
+}
+
 // ── Config ──────────────────────────────────────────────────────────────────
 function loadConfig() {
   return {
     tokenServer: localStorage.getItem('cb_token_server') || window.location.origin,
     livekitUrl: localStorage.getItem('cb_livekit_url') || '',
-    room: localStorage.getItem('cb_room') || 'clawboss'
+    room: localStorage.getItem('cb_room') || 'clawboss',
+    micDeviceId: localStorage.getItem('cb_mic_device') || ''
   };
 }
 
@@ -477,8 +387,29 @@ function saveConfig() {
   localStorage.setItem('cb_token_server', document.getElementById('cfgTokenServer').value.trim());
   localStorage.setItem('cb_livekit_url', document.getElementById('cfgLiveKitUrl').value.trim());
   localStorage.setItem('cb_room', document.getElementById('cfgRoom').value.trim() || 'clawboss');
+  localStorage.setItem('cb_mic_device', document.getElementById('cfgMicDevice').value);
   toggleConfig();
   showToast('Config saved', 'info');
+}
+
+async function populateMicDevices() {
+  try {
+    await navigator.mediaDevices.getUserMedia({ audio: true });
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const mics = devices.filter(d => d.kind === 'audioinput');
+    const select = document.getElementById('cfgMicDevice');
+    const saved = localStorage.getItem('cb_mic_device') || '';
+    select.innerHTML = '<option value="">Default Microphone</option>';
+    mics.forEach(mic => {
+      const opt = document.createElement('option');
+      opt.value = mic.deviceId;
+      opt.textContent = mic.label || 'Microphone ' + mic.deviceId.slice(0, 8);
+      if (mic.deviceId === saved) opt.selected = true;
+      select.appendChild(opt);
+    });
+  } catch (e) {
+    console.warn('Could not enumerate mic devices:', e);
+  }
 }
 
 function toggleConfig() {
@@ -487,6 +418,7 @@ function toggleConfig() {
   document.getElementById('cfgTokenServer').value = cfg.tokenServer;
   document.getElementById('cfgLiveKitUrl').value = cfg.livekitUrl;
   document.getElementById('cfgRoom').value = cfg.room;
+  if (!panel.classList.contains('open')) populateMicDevices();
   panel.classList.toggle('open');
 }
 
@@ -498,9 +430,8 @@ let micAnimFrame = null;
 let sessionStart = null;
 let timerInterval = null;
 let isMuted = false;
-let audioContext = null;
-let analyser = null;
-let micSource = null;
+let micAnalyser = null;
+let micAudioCtx = null;
 const vizBars = [];
 
 // ── Visualizer ───────────────────────────────────────────────────────────────
@@ -537,15 +468,44 @@ function stopViz() {
   vizBars.forEach(b => { b.style.height = '3px'; b.className = 'bar'; });
 }
 
-// ── Mic Level Meter ──────────────────────────────────────────────────────────
+// ── Mic Level Meter (uses LiveKit's published track — NO separate getUserMedia) ──
 function startMicMeter() {
+  if (!room || !room.localParticipant) {
+    dbg('No local participant for mic meter', 'warn');
+    return;
+  }
+
+  // Get the mic track that LiveKit is already publishing
+  const micPub = room.localParticipant.getTrackPublication(LivekitClient.Track.Source.Microphone);
+  if (!micPub || !micPub.track) {
+    dbg('No mic track published yet, retrying in 500ms...', 'warn');
+    setTimeout(() => startMicMeter(), 500);
+    return;
+  }
+
+  const mediaTrack = micPub.track.mediaStreamTrack;
+  if (!mediaTrack) {
+    dbg('No mediaStreamTrack on mic publication', 'warn');
+    return;
+  }
+
+  dbg('Mic meter attached to LiveKit track (no extra getUserMedia)', 'success');
+
+  // Create analyser from the SAME track LiveKit is using
+  micAudioCtx = new AudioContext();
+  micAnalyser = micAudioCtx.createAnalyser();
+  micAnalyser.fftSize = 256;
+  const stream = new MediaStream([mediaTrack]);
+  const source = micAudioCtx.createMediaStreamSource(stream);
+  source.connect(micAnalyser);
+
+  const dataArray = new Uint8Array(micAnalyser.frequencyBinCount);
   const micBars = document.querySelectorAll('.mic-bar');
+
   function updateMeter() {
-    let level = 0;
-    if (room && room.localParticipant) {
-      const audioLevel = room.localParticipant.audioLevel || 0;
-      level = audioLevel;
-    }
+    micAnalyser.getByteFrequencyData(dataArray);
+    const avg = dataArray.slice(0, 32).reduce((a, b) => a + b, 0) / 32;
+    const level = avg / 255;
     micBars.forEach((bar, i) => {
       const threshold = (i + 1) / micBars.length;
       bar.style.height = level > threshold ? '100%' : '15%';
@@ -558,13 +518,12 @@ function startMicMeter() {
 
 function stopMicMeter() {
   if (micAnimFrame) cancelAnimationFrame(micAnimFrame);
-  if (audioContext) { audioContext.close(); audioContext = null; }
+  if (micAudioCtx) { micAudioCtx.close().catch(() => {}); micAudioCtx = null; }
+  micAnalyser = null;
 }
 
 // ── Connection Strength ──────────────────────────────────────────────────────
 function updateConnStrength(quality) {
-  const ids = ['connStrength', 'connStrength2'];
-  const labelIds = ['connLabel', 'connLabel2'];
   const map = {
     excellent: { cls: 'excellent', label: 'Excellent' },
     good: { cls: 'good', label: 'Good' },
@@ -573,11 +532,11 @@ function updateConnStrength(quality) {
     disconnected: { cls: 'disconnected', label: '—' },
   };
   const q = map[quality] || map.disconnected;
-  ids.forEach(id => {
+  ['connStrength', 'connStrength2'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.className = 'conn-strength ' + q.cls;
   });
-  labelIds.forEach(id => {
+  ['connLabel', 'connLabel2'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.textContent = q.label;
   });
@@ -593,37 +552,29 @@ function startTimer() {
     document.getElementById('sessionTimer').textContent = m + ':' + s;
   }, 1000);
 }
-
-function stopTimer() {
-  clearInterval(timerInterval);
-  document.getElementById('sessionTimer').textContent = '00:00';
-}
+function stopTimer() { clearInterval(timerInterval); document.getElementById('sessionTimer').textContent = '00:00'; }
 
 // ── UI Helpers ────────────────────────────────────────────────────────────────
 function setStatus(state, text) {
   document.getElementById('statusDot').className = 'status-dot ' + state;
   document.getElementById('statusText').textContent = text;
 }
-
 function setState(state, text) {
   const label = document.getElementById('stateLabel');
   label.className = 'state-label ' + state;
   label.textContent = text;
 }
-
 function showView(name) {
   document.getElementById('selectView').style.display = name === 'select' ? '' : 'none';
   document.getElementById('connectingView').className = 'connecting-view' + (name === 'connecting' ? ' active' : '');
   document.getElementById('sessionView').className = 'session-view' + (name === 'session' ? ' active' : '');
 }
-
 function showToast(msg, type = 'error', duration = 3000) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.className = 'toast visible' + (type === 'info' ? ' info' : '');
   setTimeout(() => t.classList.remove('visible'), duration);
 }
-
 function updateParticipantCount() {
   if (!room) return;
   const count = [...room.remoteParticipants.values()].length + 1;
@@ -637,11 +588,11 @@ async function toggleMute() {
   if (!room) return;
   isMuted = !isMuted;
   await room.localParticipant.setMicrophoneEnabled(!isMuted);
-  const btn = document.getElementById('muteBtn');
   document.getElementById('muteIcon').textContent = isMuted ? '🔇' : '🎤';
   document.getElementById('muteLabel').textContent = isMuted ? 'Unmute' : 'Mute';
-  btn.classList.toggle('muted', isMuted);
+  document.getElementById('muteBtn').classList.toggle('muted', isMuted);
   showToast(isMuted ? 'Microphone muted' : 'Microphone active', 'info', 2000);
+  dbg(`Mic ${isMuted ? 'muted' : 'unmuted'}`);
 }
 
 // ── Session ───────────────────────────────────────────────────────────────────
@@ -663,26 +614,46 @@ async function startSession(mode) {
   document.getElementById('sessionRoom').textContent = cfg.room;
 
   try {
+    // Clear any stale dispatch lock before connecting
+    dbg('Clearing dispatch lock...');
+    try {
+      await fetch(`${cfg.tokenServer}/dispatch/clear/${encodeURIComponent(cfg.room)}`);
+    } catch (e) { dbg('Lock clear failed (non-fatal): ' + e.message, 'warn'); }
+
     const identity = 'user-' + Math.random().toString(36).slice(2, 7);
+    dbg(`Requesting token: room=${cfg.room} identity=${identity} mode=${mode}`);
+
     const tokenRes = await fetch(`${cfg.tokenServer}/token?room=${encodeURIComponent(cfg.room)}&identity=${encodeURIComponent(identity)}&mode=${encodeURIComponent(mode)}`);
     if (!tokenRes.ok) throw new Error(`Token server error: ${tokenRes.status}`);
-    const { token } = await tokenRes.json();
+    const tokenData = await tokenRes.json();
+    dbg(`Token received. Room=${tokenData.room}`, 'success');
 
     room = new LivekitClient.Room({
-      audioCaptureDefaults: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+      audioCaptureDefaults: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+        deviceId: cfg.micDeviceId || undefined
+      },
+      dynacast: false
     });
 
+    // ── Room Events ──────────────────────────────────────────────────────
+
     room.on(LivekitClient.RoomEvent.Connected, () => {
+      dbg('Room connected', 'success');
       showView('session');
       setStatus('connected', 'Connected');
       setState('listening', 'Waiting for agent...');
       updateConnStrength('good');
       startTimer();
-      startMicMeter();
       updateParticipantCount();
     });
 
-    room.on(LivekitClient.RoomEvent.Disconnected, () => handleDisconnect());
+    room.on(LivekitClient.RoomEvent.Disconnected, (reason) => {
+      dbg(`Room disconnected: ${reason || 'unknown'}`, 'warn');
+      handleDisconnect();
+    });
 
     room.on(LivekitClient.RoomEvent.ConnectionQualityChanged, (quality, participant) => {
       if (participant === room.localParticipant) {
@@ -698,8 +669,8 @@ async function startSession(mode) {
     });
 
     room.on(LivekitClient.RoomEvent.ActiveSpeakersChanged, (speakers) => {
-      const isAgentSpeaking = speakers.some(s => s.identity !== identity && s.identity.startsWith('agent'));
-      const isUserSpeaking = speakers.some(s => s.identity === identity);
+      const isAgentSpeaking = speakers.some(s => s !== room.localParticipant);
+      const isUserSpeaking = speakers.some(s => s === room.localParticipant);
       if (isAgentSpeaking) {
         setState('speaking', 'ClawBoss speaking...');
         setStatus('speaking', 'Agent Speaking');
@@ -715,14 +686,33 @@ async function startSession(mode) {
       }
     });
 
-    room.on(LivekitClient.RoomEvent.ParticipantConnected, () => updateParticipantCount());
-    room.on(LivekitClient.RoomEvent.ParticipantDisconnected, () => updateParticipantCount());
+    room.on(LivekitClient.RoomEvent.ParticipantConnected, (participant) => {
+      dbg(`Participant joined: ${participant.identity}`, 'success');
+      updateParticipantCount();
+    });
+
+    room.on(LivekitClient.RoomEvent.ParticipantDisconnected, (participant) => {
+      dbg(`Participant left: ${participant.identity}`, 'warn');
+      updateParticipantCount();
+    });
+
+    // Track published — log it so we can verify mic is publishing
+    room.on(LivekitClient.RoomEvent.LocalTrackPublished, (pub, participant) => {
+      dbg(`LOCAL track published: ${pub.source} kind=${pub.kind} sid=${pub.trackSid}`, 'success');
+      // Start mic meter AFTER the track is confirmed published
+      if (pub.source === LivekitClient.Track.Source.Microphone) {
+        dbg('Mic track confirmed published — starting meter', 'success');
+        setTimeout(() => startMicMeter(), 200);
+      }
+    });
 
     room.on(LivekitClient.RoomEvent.TrackSubscribed, (track, pub, participant) => {
+      dbg(`Subscribed to track: ${participant.identity} source=${pub.source} kind=${track.kind}`);
       if (track.kind === LivekitClient.Track.Kind.Audio) {
         const el = track.attach();
         el.style.display = 'none';
         document.body.appendChild(el);
+        dbg('Audio element attached for playback', 'success');
       }
     });
 
@@ -730,10 +720,26 @@ async function startSession(mode) {
       track.detach().forEach(el => el.remove());
     });
 
-    await room.connect(cfg.livekitUrl, token);
+    // ── Connect ──────────────────────────────────────────────────────────
+    dbg(`Connecting to ${cfg.livekitUrl}...`);
+    await room.connect(cfg.livekitUrl, tokenData.token);
+    dbg('WebRTC connected', 'success');
+
+    // Enable mic — this triggers the browser permission prompt and publishes the track
+    dbg('Enabling microphone...');
     await room.localParticipant.setMicrophoneEnabled(true);
+    dbg('setMicrophoneEnabled(true) complete', 'success');
+
+    // Verify the track was actually published
+    const micPub = room.localParticipant.getTrackPublication(LivekitClient.Track.Source.Microphone);
+    if (micPub && micPub.track) {
+      dbg(`Mic track verified: sid=${micPub.trackSid} muted=${micPub.isMuted}`, 'success');
+    } else {
+      dbg('WARNING: Mic track NOT found after setMicrophoneEnabled!', 'error');
+    }
 
   } catch (err) {
+    dbg('Connection failed: ' + err.message, 'error');
     showToast('Connection failed: ' + err.message);
     showView('select');
     setStatus('', 'Standby');
@@ -743,6 +749,14 @@ async function startSession(mode) {
 }
 
 async function endSession() {
+  dbg('Ending session...');
+  // Clear dispatch lock so next session gets a fresh agent
+  const cfg = loadConfig();
+  try {
+    await fetch(`${cfg.tokenServer}/dispatch/clear/${encodeURIComponent(cfg.room)}`);
+    dbg('Dispatch lock cleared');
+  } catch (e) { dbg('Lock clear failed: ' + e.message, 'warn'); }
+
   if (room) { await room.disconnect(); room = null; }
   handleDisconnect();
 }
@@ -767,6 +781,7 @@ window.onload = () => {
   initVisualizer();
   showView('select');
   updateConnStrength('disconnected');
+  dbg('ClawBoss v1.2 initialized');
   const cfg = loadConfig();
   if (!cfg.livekitUrl) setTimeout(() => showToast('Set your LiveKit WSS URL in ⚙ Config', 'info', 4000), 800);
 };

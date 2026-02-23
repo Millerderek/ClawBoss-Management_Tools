@@ -65,8 +65,8 @@ services:
       - agent/.env
     environment:
       - LIVEKIT_URL=ws://livekit-server:7880
-      - LIVEKIT_API_KEY=clawboss-livekit
-      - LIVEKIT_API_SECRET=b7fe896ce5005418a3b3d1c85263aa9cc787b00e0307a70328cce252c4e3cd58
+      - LIVEKIT_API_KEY=${LIVEKIT_API_KEY}
+      - LIVEKIT_API_SECRET=${LIVEKIT_API_SECRET}
     depends_on:
       - livekit
     networks:
